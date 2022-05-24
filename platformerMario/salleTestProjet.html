@@ -104,6 +104,12 @@
                 this.attack=false;
                 this.compteurInva=60;
                 this.invincible=false;
+                this.mort=false;
+                this.premiereHitBoxPerso=false;
+                this.afficheScore = 0;
+                this.coordX = 0;
+                this.coordY=0;
+                this.taille=0;
         }
         preload(){
             this.load.image('sky', 'assets/sky.png');
@@ -118,10 +124,19 @@
             this.load.spritesheet('monstre1','assets/spritesheetMonstre1.png',
             { frameWidth: 128, frameHeight: 128 });
 
+            this.load.spritesheet('hitBoxPersoAttack','assets/hitboxCOupPerso.png',
+            { frameWidth: 128, frameHeight: 128 });
 
-            this.load.image('decor_asset', 'assets/tilesetZone2.png');
-            this.load.image('background_asset', 'assets/background.png');
-            this.load.tilemapTiledJSON('maptest', 'mapTest.json');
+            this.load.spritesheet('attackFaux','assets/Spritesheet_Faux.png',
+            { frameWidth: 60, frameHeight: 60 });
+
+            this.load.spritesheet('baudrucheBackground','assets/spriteSheetbaudrucheFont.png',
+            { frameWidth: 64, frameHeight: 64 });
+
+            this.load.image('decor_asset', 'assets/assetsDecors.png');
+            this.load.image('backgroundFront_asset', 'assets/backgroundFront.png');
+            this.load.image('backgroundBack_asset', 'assets/backgroundBackt.png');
+            this.load.tilemapTiledJSON('maptest', 'mapEssai.json');
         }
 
 
@@ -129,26 +144,57 @@
 
             this.mapTest=this.add.tilemap('maptest');
                 this.tileset = this.mapTest.addTilesetImage(
-                    "tilesetZone2",
+                    "assetsDecors",
                     "decor_asset"
                     );
-                
                 this.tileset2 = this.mapTest.addTilesetImage(
-                    "background",
-                    "background_asset"
-                    ); 
+                    "backgroundBackt",
+                    "backgroundBack_asset"
+                    );
+                this.tileset3 = this.mapTest.addTilesetImage(
+                    "backgroundFront",
+                    "backgroundFront_asset"
+                    );
                 
                 this.backgrounds = this.mapTest.createLayer(
-                    "Background",
+                    "background",
                     this.tileset2
                     );
                 
+                this.backgrounds_back = this.mapTest.createLayer(
+                    "background_Back",
+                    this.tileset2
+                    );
+                
+                    this.anims.create({
+                key: 'battementBaudruche',
+                frames: this.anims.generateFrameNumbers('baudrucheBackground', {start:0,end:4}),
+                frameRate: 10,
+                repeat: -1
+                });
+                
+                this.backgrounds_int = this.mapTest.createLayer(
+                    "Calque 4",
+                    this.tileset3
+                    );
+                
+                this.backgrounds_front = this.mapTest.createLayer(
+                    "backgroundFront",
+                    this.tileset3
+                    );
+
                 this.obstacles = this.mapTest.createLayer(
-                    "Obstacles",
+                    "platforme",
                     this.tileset
                     );
 
                 this.backgrounds.setScale(2);
+                this.backgrounds.setDepth(-3);
+                this.backgrounds_back.setScale(2);
+                this.backgrounds_back.setScrollFactor(0.8);
+                this.backgrounds_back.setDepth(-2);
+                this.backgrounds_int.setScale(2);
+                this.backgrounds_front.setScale(2);
                 this.obstacles.setScale(2);
     
                 this.obstacles.setCollisionByProperty({ estSolide: true});
@@ -161,6 +207,7 @@
                 //this.platforms.create(600, 400, 'ground');
                 //this.platforms.create(50, 260, 'ground');
                 //this.platforms.create(750, 230, 'ground');
+                
 
                 this.player = this.physics.add.sprite(100, 450, 'perso').setScale(2);
 
@@ -175,8 +222,8 @@
                 this.physics.add.collider( this.player,  this.platforms);
                 this.physics.add.collider(this.player, this.obstacles);
 
-                this.physics.world.setBounds(0, 0,3000, 1500);
-                this.cameras.main.setBounds(0, 0, 3000, 1500);
+                this.physics.world.setBounds(0, 0,1900, 2100);
+                this.cameras.main.setBounds(0, 0, 1900, 2100);
                 this.cameras.main.startFollow(this.player);
 
 
@@ -220,6 +267,22 @@
                     e:  Phaser.Input.Keyboard.KeyCodes.E,
                 });
 
+                this.baudrucheFont = this.physics.add.group({allowGravity:false});
+
+                this.coordX=Math.floor(Math.random() * 1900);
+                this.coordY=Math.floor(Math.random() * 2100);
+                this.taille=Math.floor(Math.random() * 5);
+                
+                this.baudrucheFond1 = this.physics.add.sprite(this.coordX,this.coordY, 'baudrucheBackground').setScale(this.taille);
+                //this.baudrucheFond1.body.setGravity(0,-2000);
+                //this.baudrucheFond1.setGravity(0,-1500);
+                this.baudrucheFond1.setVelocityY(-200);
+                this.baudrucheFond1.anims.play('battementBaudruche', true);
+                this.baudrucheFont.add(this.baudrucheFond1);
+                console.log(this.coordX);
+                console.log(this.coordY);
+                //this.physics.add.collider(this.baudrucheFont, this.obstacles);
+
 
                 this.monstres1 = this.physics.add.group();
 
@@ -230,6 +293,8 @@
                 this.monstre1.ia=1;
                 this.monstre1.direction='up';
                 this.monstre1.agro=false;
+                this.monstre1.setSize(50,100,50,3);
+                this.monstre1.setOffset(40,10);
 
                 this.physics.add.overlap(this.player, this.monstres1, degat, null, this);
                 this.physics.add.collider(this.monstres1, this.obstacles);
@@ -240,8 +305,23 @@
 
                 this.doubleJump = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
 
+                this.attackPersoFaux = this.physics.add.group();
+                this.anims.create({
+                key: 'fauxMouv',
+                frames: this.anims.generateFrameNumbers('attackFaux', {start:7,end:13}),
+                frameRate: 30,
+                repeat: -1
+                });
+
+                this.scoreArgent=this.add.text(50,100,':'+this.afficheScore,{fontSize:'28px',fill:'#f00'});
+                this.scoreArgent.setScrollFactor(0);
+
         }
         update(){
+
+            if (this.baudrucheFond1.y<=0){
+                this.baudrucheFond1.y=2000;
+            }
             //frame invul
             if(this.invincible == true){
                 this.compteurInva-- ;
@@ -305,13 +385,13 @@
             if (this.dashVal==0){
                 if (this.moveLeft){
                     this.player.setVelocityX(-240); //alors vitesse négative en X
-                    if (this.jump==false && this.attack==false){
+                    if (this.jump==false && this.attack==false && this.mort==false){
                         this.player.anims.play('left', true); //et animation => gauche
                     }
                     this.player.direction = 'left';
                 }else if (this.moveRight){
                     this.player.setVelocityX(240); //alors vitesse positive en X
-                    if (this.jump==false && this.attack==false){
+                    if (this.jump==false && this.attack==false && this.mort==false){
                         this.player.anims.play('right', true); //et animation => gauche
                     }
                     this.player.direction = 'right';
@@ -325,7 +405,7 @@
                     this.player.direction = 'down';
                 }else{ // sinon
                     this.player.setVelocityX(0);
-                    if (this.jump==false && this.attack==false){
+                    if (this.jump==false && this.attack==false && this.mort==false){
                         this.player.anims.play('turn', true); //et animation => gauche
                     }
                 }
@@ -347,13 +427,35 @@
                     this.player.anims.play('rightAttack', true);
                     this.attack=true;
                 }
-
-                if (this.player.anims.currentFrame.index==18){
+                if (this.player.anims.currentFrame.index>=3 && this.player.anims.currentFrame.index<=17 && this.attack==true && this.premiereHitBoxPerso==false){
+                    this.attackPerso = this.physics.add.group();
+                    this.attackPerso = this.physics.add.sprite(this.player.x,this.player.y, 'hitBoxPersoAttack').setScale(1);
+                    this.physics.add.overlap(this.attackPerso, this.monstres1, degatMonstre, null, this);
+                    this.attackPerso.setGravity(0,-1500);
+                    this.premiereHitBoxPerso=true;
+                }
+                if (this.player.anims.currentFrame.index==18 && this.attack==true){
                     this.attack=false;
+                    this.premiereHitBoxPerso=false;
+                    this.attackPerso.destroy();
+                }
+
+                if (Phaser.Input.Keyboard.JustDown(this.keys.a) && this.afficheScore>=10){
+                    this.afficheScore=this.afficheScore-10;
+                    this.scoreArgent.setText(': ' + this.afficheScore);
+                    this.scoreArgent.updateText();
+                    
+                    this.attackPersoFaux = this.physics.add.sprite(this.player.x,this.player.y, 'attackFaux').setScale(2);
+                    this.physics.add.overlap(this.attackPersoFaux, this.monstres1, degatMonstre, null, this);
+                    this.attackPersoFaux.setGravity(0,-1500);
+                    this.attackPersoFaux.setVelocityX(300);
+
+                    this.attackPersoFaux.anims.play('fauxMouv', true);
                 }
 
                 if(this.player.vie<=0){
                     this.player.anims.play('death', true);
+                    this.mort=true;
                     if (this.player.anims.currentFrame.index==18){
                         this.gameOver=true;
                         this.player.disableBody(true,true);
@@ -381,10 +483,22 @@
                 }
             }
 
+            function degatMonstre(player,monstre){
+                this.attackPersoFaux.destroy();
+                monstre.vie=monstre.vie-10;
+                if (monstre.vie<=0){
+                    monstre.disableBody(true,true);
+                    this.afficheScore=this.afficheScore+100+Math.floor(Math.random() * 50);
+                    this.scoreArgent.setText(': ' + this.afficheScore);
+                    this.scoreArgent.updateText();
+                }
+            }
+
+
             var config = {
             pixelArt: true,
             type: Phaser.AUTO,
-            width: 800, height: 600,
+            width: 900, height: 1000,
             physics: {
                 default: 'arcade',
                 arcade: {
