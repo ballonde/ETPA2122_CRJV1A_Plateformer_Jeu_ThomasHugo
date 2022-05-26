@@ -133,6 +133,12 @@
             this.load.spritesheet('baudrucheBackground','assets/spriteSheetbaudrucheFont.png',
             { frameWidth: 64, frameHeight: 64 });
 
+            this.load.spritesheet('baudruchePlatformeSolAme','assets/SpriteSheetbBudrucheAnimSolAme.png',
+            { frameWidth: 64, frameHeight: 64 });
+
+            this.load.spritesheet('fantome','assets/spritesheetFantome.png',
+            { frameWidth: 32, frameHeight: 50 });
+
             this.load.image('decor_asset', 'assets/assetsDecors.png');
             this.load.image('backgroundFront_asset', 'assets/backgroundFront.png');
             this.load.image('backgroundBack_asset', 'assets/backgroundBackt.png');
@@ -166,9 +172,16 @@
                     this.tileset2
                     );
                 
-                    this.anims.create({
+                this.anims.create({
                 key: 'battementBaudruche',
                 frames: this.anims.generateFrameNumbers('baudrucheBackground', {start:0,end:4}),
+                frameRate: 10,
+                repeat: -1
+                });
+
+                this.anims.create({
+                key: 'battementBaudrucheSol',
+                frames: this.anims.generateFrameNumbers('baudruchePlatformeSolAme', {start:0,end:4}),
                 frameRate: 10,
                 repeat: -1
                 });
@@ -222,8 +235,8 @@
                 this.physics.add.collider( this.player,  this.platforms);
                 this.physics.add.collider(this.player, this.obstacles);
 
-                this.physics.world.setBounds(0, 0,1900, 2100);
-                this.cameras.main.setBounds(0, 0, 1900, 2100);
+                this.physics.world.setBounds(0, 0,1900, 1950);
+                this.cameras.main.setBounds(0, 0, 1900, 1950);
                 this.cameras.main.startFollow(this.player);
 
 
@@ -267,34 +280,59 @@
                     e:  Phaser.Input.Keyboard.KeyCodes.E,
                 });
 
-                this.baudrucheFont = this.physics.add.group({allowGravity:false});
+                //this.baudrucheFont = this.physics.add.group({allowGravity:false});
+                this.baudrucheFont = this.physics.add.group();
 
-                this.coordX=Math.floor(Math.random() * 1900);
-                this.coordY=Math.floor(Math.random() * 2100);
-                this.taille=Math.floor(Math.random() * 5);
+                this.invoqueBaudrucheBackground();
+                this.invoqueBaudrucheBackground();
+                this.invoqueBaudrucheBackground();
+                this.invoqueBaudrucheBackground();
+                this.invoqueBaudrucheBackground();
+                this.invoqueBaudrucheBackground();
+                this.invoqueBaudrucheBackground();
+                this.invoqueBaudrucheBackground();
+                this.invoqueBaudrucheBackground();
+                this.invoqueBaudrucheBackground();
+                this.invoqueBaudrucheBackground();
+                this.invoqueBaudrucheBackground();
+                this.invoqueBaudrucheBackground();
+                this.invoqueBaudrucheBackground();
+
+                this.monstres1 = this.physics.add.group({allowGravity:false});
+
+                this.mapTest.getObjectLayer('monstre').objects.forEach((monstres1)=>{
+                    this.monstre1 = this.monstres1.create( (monstres1.x)*2, (monstres1.y)*2-16, 'monstre1').setScale(2);
+                    this.monstre1.setPushable(false);
+                    this.monstre1.vie=40;
+                    this.monstre1.ia=1;
+                    this.monstre1.direction='up';
+                    this.monstre1.agro=false;
+                    this.monstre1.setSize(50,100,50,3);
+                    this.monstre1.setOffset(40,10);
+                })
+
+                this.baudrucheSol = this.physics.add.group({allowGravity:false});
+
+                this.mapTest.getObjectLayer('baudrucheSol').objects.forEach((baudrucheSol)=>{
+                this.baudrucheSol1 = this.baudrucheSol.create(baudrucheSol.x*2,baudrucheSol.y*2, 'baudruchePlatformeSolAme').setScale(2).setDepth(1);
+                this.baudrucheSol1.anims.play('battementBaudrucheSol', true);
+                })
+
+
+                this.anims.create({
+                key: 'fantomeApp',
+                frames: this.anims.generateFrameNumbers('fantome', {start:0,end:15}),
+                frameRate: 10,
+                repeat: -1
+                });
                 
-                this.baudrucheFond1 = this.physics.add.sprite(this.coordX,this.coordY, 'baudrucheBackground').setScale(this.taille);
-                //this.baudrucheFond1.body.setGravity(0,-2000);
-                //this.baudrucheFond1.setGravity(0,-1500);
-                this.baudrucheFond1.setVelocityY(-200);
-                this.baudrucheFond1.anims.play('battementBaudruche', true);
-                this.baudrucheFont.add(this.baudrucheFond1);
-                console.log(this.coordX);
-                console.log(this.coordY);
-                //this.physics.add.collider(this.baudrucheFont, this.obstacles);
+                this.fantomes = this.physics.add.group({allowGravity:false});
 
-
-                this.monstres1 = this.physics.add.group();
-
-                this.monstre1 = this.physics.add.sprite(500,500, 'monstre1').setScale(2);
-                this.monstres1.add(this.monstre1);
-                this.monstre1.setPushable(false);
-                this.monstre1.vie=40;
-                this.monstre1.ia=1;
-                this.monstre1.direction='up';
-                this.monstre1.agro=false;
-                this.monstre1.setSize(50,100,50,3);
-                this.monstre1.setOffset(40,10);
+                this.mapTest.getObjectLayer('fantomeSol').objects.forEach((fantomes)=>{
+                this.fantome = this.fantomes.create(fantomes.x*2,fantomes.y*2-55, 'fantome').setScale(2).setDepth(1);
+                this.fantome.anims.play('fantomeApp', true);
+                })
+                
 
                 this.physics.add.overlap(this.player, this.monstres1, degat, null, this);
                 this.physics.add.collider(this.monstres1, this.obstacles);
@@ -318,10 +356,26 @@
 
         }
         update(){
+            
+            this.baudrucheFont.children.iterate(function (child) {
+                
+                if (child.y<=0){
+                    this.coordX=Math.floor(Math.random() * 1900);
+                    this.coordY=Math.floor(Math.random() * 2100);
+                    this.taille=Math.floor(Math.random() * 5);
+                    this.vitesse=Math.floor(Math.random() * 400);
+                    this.vitesse=-(this.vitesse);
+                    child.x=this.coordX;
+                    child.y=2200;
+                    child.setScale(this.taille);
+                    child.setVelocity(0,this.vitesse);
+                    console.log(this.coordX);
+                    console.log(this.coordY);
+               }
+            },this);
+  
 
-            if (this.baudrucheFond1.y<=0){
-                this.baudrucheFond1.y=2000;
-            }
+
             //frame invul
             if(this.invincible == true){
                 this.compteurInva-- ;
@@ -416,7 +470,7 @@
 
                 if (Phaser.Input.Keyboard.JustDown(this.cursors.space) && this.nbSaut>0){
                 //si touche haut appuyée ET que le perso touche le sol
-                    this.player.setVelocityY(-600); //alors vitesse verticale négative
+                    this.player.setVelocityY(-400); //alors vitesse verticale négative
                     this.nbSaut=this.nbSaut-1;
                     this.player.anims.play('jump', true);
                     this.jump=true;
@@ -447,7 +501,7 @@
                     
                     this.attackPersoFaux = this.physics.add.sprite(this.player.x,this.player.y, 'attackFaux').setScale(2);
                     this.physics.add.overlap(this.attackPersoFaux, this.monstres1, degatMonstre, null, this);
-                    this.attackPersoFaux.setGravity(0,-1500);
+                    this.attackPersoFaux.setGravity(0,-500);
                     this.attackPersoFaux.setVelocityX(300);
 
                     this.attackPersoFaux.anims.play('fauxMouv', true);
@@ -466,6 +520,31 @@
                 }*/
             }
             }
+
+            verifierHauteur(baudrucheFond1){
+                console.log("ffff");
+                if (baudrucheFond1.y<=0){
+                    console.log("rate");
+                    baudrucheFond1.destroy();
+                    this.invoqueBaudrucheBackground();
+                }
+            }
+            invoqueBaudrucheBackground(){
+
+                this.coordX=Math.floor(Math.random() * 1900);
+                this.coordY=Math.floor(Math.random() * 2100);
+                this.taille=Math.floor(Math.random() * 5);
+                this.vitesse=Math.floor(Math.random() * 400);
+                this.baudrucheFond1 = this.baudrucheFont.create(this.coordX,this.coordY, 'baudrucheBackground').setScale(this.taille).setDepth(-1).setGravity(0,-500);
+                //this.baudrucheFond1 = this.physics.add.sprite(100,450, 'baudrucheBackground').setScale(this.taille).setDepth(1).setGravity(0,-500);
+                //this.baudrucheFond1.body.setGravity(0,-2000);
+                this.baudrucheFond1.setVelocityY(-(this.vitesse));
+                this.baudrucheFond1.anims.play('battementBaudruche', true);
+                //this.baudrucheFont.add(this.baudrucheFond1);
+                console.log(this.coordX);
+                console.log(this.coordY);
+                //this.physics.add.collider(this.baudrucheFont, this.obstacles);
+                }
         };
             
             function hitBomb(player, bomb){
@@ -474,6 +553,7 @@
                 player.anims.play('turn');
                 gameOver = true;
             }
+
 
             function degat(player){
                 if (this.invincible==false){
@@ -498,12 +578,12 @@
             var config = {
             pixelArt: true,
             type: Phaser.AUTO,
-            width: 900, height: 1000,
+            width: 1500, height: 700,
             physics: {
                 default: 'arcade',
                 arcade: {
-                gravity: { y: 1500},
-                debug: true
+                gravity: { y: 500},
+                debug: false
             }},
 
             scene: [Tuto,PlayGame]
