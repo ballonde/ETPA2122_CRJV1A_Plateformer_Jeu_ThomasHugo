@@ -8,7 +8,51 @@
     <body>
     
         <script type="text/javascript">
+    
+    class EcranAccueil extends Phaser.Scene{
+            constructor(){
+                super("EcranAccueil");
+                this.ecranAccueil;
+                this.boutonPlay;
+            }
+            preload(){
+                this.load.image('boutonOption','assets/bontonOption.png');
+                this.load.image('boutonPlay','assets/boutonPlay.png');
+                this.load.image('ecranAccueil','assets/ecranAccueil.png');
+            }
+            create(){
+                this.ecranAccueil= this.physics.add.staticGroup();
+                this.ecranAccueil.create(448, 223, 'ecranAccueil').setScale(2.1).refreshBody();
+                
+                this.boutonPlay= this.physics.add.staticGroup();
+                this.boutonPlay.create(450, 300, 'boutonPlay').setScale(2).refreshBody();
+                this.boutonOption= this.physics.add.staticGroup();
+                this.boutonOption.create(450, 350, 'boutonOption').setScale(2).refreshBody();
 
+
+                this.keys = this.input.keyboard.addKeys({
+                    a:  Phaser.Input.Keyboard.KeyCodes.A,
+                });
+            }
+            update(){
+                if ( this.keys.a.isDown){
+                    this.scene.start('Tuto',{
+                    });
+                }
+            }
+        }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     class PlayGame extends Phaser.Scene{
             constructor(){
                 super("playgame");
@@ -92,8 +136,18 @@
                 }
         }
         };
-
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         class Tuto extends Phaser.Scene{
             constructor(){
                 super("Tuto");
@@ -110,6 +164,8 @@
                 this.coordX = 0;
                 this.coordY=0;
                 this.taille=0;
+                this.premiereHitBoxMonstreMain=false;
+                this.ameMonstre="banshee";
         }
         preload(){
             this.load.image('sky', 'assets/sky.png');
@@ -121,8 +177,17 @@
             this.load.spritesheet('perso','assets/spritesheetPerso.png',
             { frameWidth: 64, frameHeight: 64 });
 
-            this.load.spritesheet('monstre1','assets/spritesheetMonstre1.png',
+            this.load.spritesheet('compAmeBanshee','assets/spriteSheetAmeBanshee.png',
+            { frameWidth: 128, frameHeight: 70 });
+
+            this.load.spritesheet('monstreMain','assets/spritesheetMonstre1.png',
             { frameWidth: 128, frameHeight: 128 });
+
+            this.load.spritesheet('banshee','assets/spriteSheetBanshee.png',
+            { frameWidth: 128, frameHeight: 128 });
+
+            this.load.spritesheet('baudruchePetitEnnemi','assets/spritesheetBaudruchePetitEnnemis.png',
+            { frameWidth: 64, frameHeight: 64 });
 
             this.load.spritesheet('hitBoxPersoAttack','assets/hitboxCOupPerso.png',
             { frameWidth: 128, frameHeight: 128 });
@@ -138,6 +203,15 @@
 
             this.load.spritesheet('fantome','assets/spritesheetFantome.png',
             { frameWidth: 32, frameHeight: 50 });
+
+            this.load.spritesheet('faux','assets/faux.png',
+            { frameWidth: 64, frameHeight: 64 });
+
+            this.load.spritesheet('barreVie','assets/barreVie.png',
+            { frameWidth: 112, frameHeight: 32 });
+
+            this.load.spritesheet('lenterneArgent', 'assets/lenterne.png',
+            { frameWidth: 48, frameHeight: 96 });
 
             this.load.image('decor_asset', 'assets/assetsDecors.png');
             this.load.image('backgroundFront_asset', 'assets/backgroundFront.png');
@@ -222,12 +296,12 @@
                 //this.platforms.create(750, 230, 'ground');
                 
 
-                this.player = this.physics.add.sprite(100, 450, 'perso').setScale(2);
+                this.player = this.physics.add.sprite(1100, 1450, 'perso').setScale(2);
 
                 this.player.setSize(20,40,0,3);
                 this.player.setOffset(20,10);
 
-                this.player.vie=6;
+                this.player.vie=5;
 
                 this.player.direction = 'right';
                 this.player.jumpCount = 0;
@@ -235,8 +309,8 @@
                 this.physics.add.collider( this.player,  this.platforms);
                 this.physics.add.collider(this.player, this.obstacles);
 
-                this.physics.world.setBounds(0, 0,1900, 1950);
-                this.cameras.main.setBounds(0, 0, 1900, 1950);
+                this.physics.world.setBounds(0, 0,2540, 1990);
+                this.cameras.main.setBounds(0, 0, 2540, 1950);
                 this.cameras.main.startFollow(this.player);
 
 
@@ -260,7 +334,7 @@
                 });
                 this.anims.create({
                 key: 'jump',
-                frames: this.anims.generateFrameNumbers('perso', {start:54,end:67}),
+                frames: this.anims.generateFrameNumbers('perso', {start:54,end:70}),
                 frameRate: 10,
                 });
                 this.anims.create({
@@ -273,11 +347,58 @@
                 frames: this.anims.generateFrameNumbers('perso', {start:90,end:107}),
                 frameRate: 50,
                 });
+                this.anims.create({
+                key: 'leftAttack',
+                frames: this.anims.generateFrameNumbers('perso', {start:108,end:125}),
+                frameRate: 50,
+                });
                 this.cursors = this.input.keyboard.createCursorKeys();
                 this.keys = this.input.keyboard.addKeys({
                     a:  Phaser.Input.Keyboard.KeyCodes.A,
                     d:  Phaser.Input.Keyboard.KeyCodes.D,
                     e:  Phaser.Input.Keyboard.KeyCodes.E,
+                });
+
+                this.argent = this.physics.add.sprite(65, 145, 'lenterneArgent').setScale(1.2).setDepth(2);
+                this.argent.setGravityY(-500);
+                this.argent.setScrollFactor(0);
+
+                this.scoreArgent=this.add.text(85,145,':'+this.afficheScore,{fontSize:'28px',fill:'#f00'});
+                this.scoreArgent.setScrollFactor(0);
+
+                this.barreVie = this.physics.add.sprite(150,50, 'barreVie').setScale(2).setDepth(2);
+                this.barreVie.setGravityY(-500);
+                this.barreVie.setScrollFactor(0);
+
+                this.anims.create({
+                    key: 'barreVie5',
+                    frames: [ { key: 'barreVie', frame: 0 } ],
+                    frameRate: 20
+                });
+                this.anims.create({
+                    key: 'barreVie4',
+                    frames: [ { key: 'barreVie', frame: 1 } ],
+                    frameRate: 20
+                });
+                this.anims.create({
+                    key: 'barreVie3',
+                    frames: [ { key: 'barreVie', frame: 2 } ],
+                    frameRate: 20
+                });
+                this.anims.create({
+                    key: 'barreVie2',
+                    frames: [ { key: 'barreVie', frame: 3 } ],
+                    frameRate: 20
+                });
+                this.anims.create({
+                    key: 'barreVie1',
+                    frames: [ { key: 'barreVie', frame: 4 } ],
+                    frameRate: 20
+                });
+                this.anims.create({
+                    key: 'barreVie0',
+                    frames: [ { key: 'barreVie', frame: 5 } ],
+                    frameRate: 20
                 });
 
                 //this.baudrucheFont = this.physics.add.group({allowGravity:false});
@@ -293,23 +414,116 @@
                 this.invoqueBaudrucheBackground();
                 this.invoqueBaudrucheBackground();
                 this.invoqueBaudrucheBackground();
-                this.invoqueBaudrucheBackground();
-                this.invoqueBaudrucheBackground();
-                this.invoqueBaudrucheBackground();
-                this.invoqueBaudrucheBackground();
+
+
+                this.monstreGlobal = this.physics.add.group({allowGravity:false});
+
 
                 this.monstres1 = this.physics.add.group({allowGravity:false});
 
                 this.mapTest.getObjectLayer('monstre').objects.forEach((monstres1)=>{
-                    this.monstre1 = this.monstres1.create( (monstres1.x)*2, (monstres1.y)*2-16, 'monstre1').setScale(2);
+                    this.monstre1 = this.monstres1.create( (monstres1.x)*2, (monstres1.y)*2-16, 'monstreMain').setScale(2);
                     this.monstre1.setPushable(false);
-                    this.monstre1.vie=40;
-                    this.monstre1.ia=1;
-                    this.monstre1.direction='up';
-                    this.monstre1.agro=false;
+                    this.monstre1.type="main";
+                    this.monstre1.vie=30;
+                    this.monstre1.invulnerabilite=0;
+                    this.monstre1.attack=false;
+                    this.monstre1.coordXOrigine=this.monstre1.x;
+                    this.monstre1.direction='left';
                     this.monstre1.setSize(50,100,50,3);
                     this.monstre1.setOffset(40,10);
+                    this.monstre1.setVelocityX(200);
+
+
+                    this.monstreGlobal.add(this.monstre1);
                 })
+
+                this.anims.create({
+                key: 'mouvLeftMain',
+                frames: this.anims.generateFrameNumbers('monstreMain', {start:30,end:44}),
+                frameRate: 10,
+                });
+                this.anims.create({
+                key: 'mouvRightMain',
+                frames: this.anims.generateFrameNumbers('monstreMain', {start:15,end:29}),
+                frameRate: 10,
+                });
+                this.anims.create({
+                key: 'attackLeftMain',
+                frames: this.anims.generateFrameNumbers('monstreMain', {start:3,end:5}),
+                frameRate: 5,
+                });
+                this.anims.create({
+                key: 'attackRightMain',
+                frames: this.anims.generateFrameNumbers('monstreMain', {start:0,end:2}),
+                frameRate: 5,
+                });
+
+
+                this.banshees = this.physics.add.group({allowGravity:false});
+                this.mapTest.getObjectLayer('Banshee').objects.forEach((banshees)=>{
+                    this.banshee = this.banshees.create( (banshees.x)*2, (banshees.y)*2-16, 'banshee').setScale(2);
+                    this.banshee.setPushable(false);
+                    this.banshee.type="banshee";
+                    this.banshee.vie=20;
+                    this.banshee.invulnerabilite=0;
+                    this.banshee.attack=false;
+                    this.banshee.coordXOrigine=this.banshee.x;
+                    this.banshee.direction='left';
+                    this.banshee.setSize(20,45,50,3);
+                    this.banshee.setOffset(53,45);
+                    //this.Banshee.setVelocityX(200);
+
+                    this.monstreGlobal.add(this.banshee);
+                })
+
+                this.anims.create({
+                key: 'attackCryBanshee',
+                frames: this.anims.generateFrameNumbers('banshee', {start:0,end:19}),
+                frameRate: 10,
+                });
+
+                this.anims.create({
+                key: 'mouvBanshee',
+                frames: this.anims.generateFrameNumbers('banshee', {start:25,end:49}),
+                frameRate: 20,
+                repeat: -1
+                });
+
+                this.baudruchePetitEnnemis = this.physics.add.group({allowGravity:false});
+                this.mapTest.getObjectLayer('baudrucheEnnemisPetit').objects.forEach((baudruchePetitEnnemis)=>{
+                    this.baudruchePetitEnnemi = this.baudruchePetitEnnemis.create( (baudruchePetitEnnemis.x)*2, (baudruchePetitEnnemis.y)*2-16, 'baudruchePetitEnnemi');
+                    this.baudruchePetitEnnemi.setPushable(false);
+                    this.baudruchePetitEnnemi.type="baudruche";
+                    this.baudruchePetitEnnemi.vie=10;
+                    this.baudruchePetitEnnemi.invulnerabilite=0;
+                    this.baudruchePetitEnnemi.attack=false;
+
+                    this.baudruchePetitEnnemi.target=false;
+                    this.monstreGlobal.add(this.baudruchePetitEnnemi);
+                })
+
+                this.anims.create({
+                key: 'attackBaudrucheExplo',
+                frames: this.anims.generateFrameNumbers('baudruchePetitEnnemi', {start:15,end:29}),
+                frameRate: 20,
+                });
+
+                this.anims.create({
+                key: 'mouvBaudruchePetitEnnemi',
+                frames: this.anims.generateFrameNumbers('baudruchePetitEnnemi', {start:0,end:4}),
+                frameRate: 10,
+                repeat: -1
+                });
+
+                this.anims.create({
+                key: 'idleBaudruchePetitEnnemi',
+                frames: this.anims.generateFrameNumbers('baudruchePetitEnnemi', {start:5,end:9}),
+                frameRate: 10,
+                repeat: -1
+                });
+
+
 
                 this.baudrucheSol = this.physics.add.group({allowGravity:false});
 
@@ -322,23 +536,25 @@
                 this.anims.create({
                 key: 'fantomeApp',
                 frames: this.anims.generateFrameNumbers('fantome', {start:0,end:15}),
-                frameRate: 10,
-                repeat: -1
+                frameRate: 20,
                 });
                 
                 this.fantomes = this.physics.add.group({allowGravity:false});
-
+                /*
                 this.mapTest.getObjectLayer('fantomeSol').objects.forEach((fantomes)=>{
                 this.fantome = this.fantomes.create(fantomes.x*2,fantomes.y*2-55, 'fantome').setScale(2).setDepth(1);
                 this.fantome.anims.play('fantomeApp', true);
-                })
+                })*/
                 
 
-                this.physics.add.overlap(this.player, this.monstres1, degat, null, this);
-                this.physics.add.collider(this.monstres1, this.obstacles);
+                this.physics.add.overlap(this.player, this.monstres1, degatPlayer, null, this);
+                this.physics.add.overlap(this.player, this.banshees, degatPlayer, null, this);
+                this.physics.add.collider(this.monstreGlobal, this.obstacles);
+                //this.physics.add.collider(this.monstres1, this.obstacles);
+                //this.physics.add.collider(this.Banshees, this.obstacles);
                 //this.physics.add.collider(this.sentinelles, this.obstacles,changeOrSenti, null,this);
 
-                this.scoreText=this.add.text(16,16,'score: 0',{fontSize:'32px',fill:'#000'});
+                //this.scoreText=this.add.text(16,16,'score: 0',{fontSize:'32px',fill:'#000'});
                 //affiche un texte à l’écran, pour le score
 
                 this.doubleJump = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
@@ -351,11 +567,49 @@
                 repeat: -1
                 });
 
-                this.scoreArgent=this.add.text(50,100,':'+this.afficheScore,{fontSize:'28px',fill:'#f00'});
-                this.scoreArgent.setScrollFactor(0);
+
+               
+                this.anims.create({
+                key: 'crisAmeBanshee',
+                frames: this.anims.generateFrameNumbers('compAmeBanshee', {start:0,end:14}),
+                frameRate: 10,
+                });
 
         }
         update(){
+
+            //barre de vie
+        if (this.player.vie==6){
+            this.barreVie.anims.play('barreVie6', true); //et animation => gauche
+        }
+        if (this.player.vie==5){
+            this.barreVie.anims.play('barreVie5', true); //et animation => gauche
+        }
+        if (this.player.vie==4){
+            this.barreVie.anims.play('barreVie4', true); //et animation => gauche
+        }
+        if (this.player.vie==3){
+            this.barreVie.anims.play('barreVie3', true); //et animation => gauche
+        }
+        if (this.player.vie==2){
+            this.barreVie.anims.play('barreVie2', true); //et animation => gauche
+        }
+        if (this.player.vie==1){
+            this.barreVie.anims.play('barreVie1', true); //et animation => gauche
+        }
+        if (this.player.vie==0){
+            this.barreVie.anims.play('barreVie0', true); //et animation => gauche
+            this.gameOver=true;
+        }
+
+        this.monstreGlobal.children.iterate(function (child) {     
+                if (child.invulnerabilite!=0){
+                    child.invulnerabilite=child.invulnerabilite-1;
+                    child.setTint(0xff0000);
+                }else{
+                    child.setTint(0xffffff);
+                }
+        },this);
             
             this.baudrucheFont.children.iterate(function (child) {
                 
@@ -369,9 +623,174 @@
                     child.y=2200;
                     child.setScale(this.taille);
                     child.setVelocity(0,this.vitesse);
-                    console.log(this.coordX);
-                    console.log(this.coordY);
                }
+            },this);
+
+            this.sleep = (milliseconds) => {
+                        return new Promise(resolve => setTimeout(resolve, milliseconds));
+            }
+            this.baudruchePetitEnnemis.children.iterate(function (child) {
+                //child.setVelocityX(-300);
+                if (child.attack==false && child.target==false){
+                    child.anims.play('idleBaudruchePetitEnnemi', true);
+                }
+
+                if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=300 && child.attack!=true){
+                    child.anims.play('mouvBaudruchePetitEnnemi', true);
+                    child.target=true;
+                    this.physics.moveToObject(child, this.player, 300);
+                    //this.baudruchePetitEnnemi.rotation=90;
+                }
+                
+
+                if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=75 && child.target==true){
+                    child.anims.play('attackBaudrucheExplo', true);
+                    child.attack=true;
+                    child.setVelocity(0,0);
+                    child.setScale(3);
+                }
+
+                if (child.anims.currentFrame.index>=8 && child.attack==true){
+                    this.physics.add.overlap(this.player, child, degatPlayer, null, this);
+                    }
+
+                if (child.anims.currentFrame.index==15 && child.attack==true){
+                        //child.attack=false;
+                        //child.destroy();
+                        child.disableBody(true,true);
+                    }
+            },this);
+
+
+
+            this.banshees.children.iterate(function (child) {
+
+
+                //child.setVelocityX(-300);
+                if (child.attack==false){
+                    if (this.bansheeChangeDirection=Math.floor(Math.random() * 100)<=1){
+                        if (this.bansheeChangeDirectionX=Math.floor(Math.random() * 10)<=5){
+                                this.bansheeDirectionX=-(Math.floor(Math.random() * 500));
+                        }else{
+                            this.bansheeDirectionX=Math.floor(Math.random() * 500)
+                        }
+                        if (this.bansheeChangeDirectionY=Math.floor(Math.random() * 10)<=5){
+                                this.bansheeDirectionY=-(Math.floor(Math.random() * 500));  
+                        }else{
+                            this.bansheeDirectionY=Math.floor(Math.random() * 500);
+                        }
+
+                        /*
+                        if (this.speed === undefined) { this.speed = 60; }
+                        if (this.maxTime === undefined) { this.maxTime = 0; }
+
+                        this.angle = Math.atan2(this.bansheeChangeDirectionY - child.y, this.bansheeChangeDirectionX.x - child.x);
+                        console.log(this.angle);
+                        if (this.maxTime > 0){
+                            //  We know how many pixels we need to move, but how fast?
+                            this.dx = child.x - this.bansheeChangeDirectionX;
+                            this.dy = child.y - this.bansheeChangeDirectionY;
+
+                            this.speed = Math.sqrt(this.dx * this.dx + this.dy * this.dy) / (this.maxTime / 1000);
+                        }
+                        child.setVelocityX((Math.cos(this.angle) * this.speed) / 100);
+                        child.setVelocityY((Math.sin(this.angle) * this.speed) / 100);
+                        console.log(this.angle);
+                        child.rotation = this.angle;*/
+
+
+
+
+
+
+
+
+
+
+
+
+                        //child.rotation = Phaser.Math.Angle.Between(child.x, child.y, this.bansheeDirectionX, this.bansheeDirectionY);
+                        //console.log(child.rotation);
+                        child.setVelocity(this.bansheeDirectionX,this.bansheeDirectionY);
+                        child.anims.play('mouvBanshee', true);
+                    }
+                }
+
+                if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=300){
+                    child.anims.play('attackCryBanshee', true);
+                    child.attack=true;
+                    this.sleep(1000).then(() => {
+                        child.attack=false;
+                        //this.premiereHitBoxMonstreMain=false;
+                        //this.attackMonstreMain.destroy();
+                    })
+                }
+            },this);
+
+
+                    
+            //Ia des monstres aus mains géantes
+            this.monstres1.children.iterate(function (child) {
+
+
+                if (child.attack==true){
+                    child.setVelocityX(0);
+                }
+                if (child.direction=="left" && child.attack==false){
+                    child.setVelocityX(-300);
+                    child.direction='left';
+                    child.anims.play('mouvLeftMain', true);
+                }
+
+                if (child.direction=="right" && child.attack==false){
+                    child.setVelocityX(300);
+                    child.direction='right';
+                    child.anims.play('mouvRightMain', true);
+                }
+
+                if(child.coordXOrigine-child.x>=150 && child.attack==false){
+                    child.setVelocityX(300);
+                    child.direction='right';
+                    child.anims.play('mouvRightMain', true);
+                }
+                if(child.x-child.coordXOrigine>=150 && child.attack==false){
+                    child.setVelocityX(-300);
+                    child.direction='left';
+                    child.anims.play('mouvLeftMain', true);
+                }
+                //child.anims.currentFrame.index>2 && child.anims.currentFrame.index<=3 &&
+                if (child.attack==true && this.premiereHitBoxMonstreMain==false){
+                    console.log("test");
+                    this.attackMonstreMain = this.physics.add.group();
+                    this.attackMonstreMain = this.physics.add.sprite(child.x,child.y, 'hitBoxPersoAttack');
+                    this.physics.add.overlap(this.attackMonstreMain, this.player, degatPlayer, null, this);
+                    this.attackMonstreMain.setGravity(0,-500);
+                    this.premiereHitBoxMonstreMain=true;
+                    if (child.direction=="right"){
+                        this.attackMonstreMain.setSize(100,50,50,50);
+                        this.attackMonstreMain.setOffset(50,50);
+                    }
+                    if (child.direction=="left"){
+                        this.attackMonstreMain.setSize(100,50,50,50);
+                        this.attackMonstreMain.setOffset(-30,50);    
+                    }
+                }
+
+                if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=100 && child.attack==false){
+                    child.attack=true;
+                    if(child.direction=="left"){
+                        child.anims.play('attackLeftMain', true);
+                    }
+                    if(child.direction=="right"){
+                        child.anims.play('attackRightMain', true);
+                    }
+                    this.sleep(1000).then(() => {
+                        child.attack=false;
+                        this.premiereHitBoxMonstreMain=false;
+                        this.attackMonstreMain.destroy();
+                    })
+                }
+
             },this);
   
 
@@ -436,82 +855,100 @@
             if (this.dashVal<0){this.dashVal = 0};
 
 
-            if (this.dashVal==0){
+            if (this.dashVal==0 && this.mort!=true){
                 if (this.moveLeft){
-                    this.player.setVelocityX(-240); //alors vitesse négative en X
+                    this.player.setVelocityX(-350); //alors vitesse négative en X
                     if (this.jump==false && this.attack==false && this.mort==false){
                         this.player.anims.play('left', true); //et animation => gauche
                     }
                     this.player.direction = 'left';
                 }else if (this.moveRight){
-                    this.player.setVelocityX(240); //alors vitesse positive en X
+                    this.player.setVelocityX(350); //alors vitesse positive en X
                     if (this.jump==false && this.attack==false && this.mort==false){
                         this.player.anims.play('right', true); //et animation => gauche
                     }
                     this.player.direction = 'right';
-                }else if (this.moveUp){
-                    this.player.setVelocityY(-240);
-                    this.player.anims.play('up', true);
-                    this.player.direction = 'up';
-                }else if (this.moveDown){
-                    this.player.setVelocityY(240);
-                    this.player.anims.play('down', true);
-                    this.player.direction = 'down';
                 }else{ // sinon
                     this.player.setVelocityX(0);
                     if (this.jump==false && this.attack==false && this.mort==false){
                         this.player.anims.play('turn', true); //et animation => gauche
                     }
                 }
-                if (this.player.body.onFloor()){
+                if (this.player.body.onFloor() && this.jump==true){
                     this.nbSaut=2;
                     this.jump=false;
+                    this.attack=false;
                 }
 
                 if (Phaser.Input.Keyboard.JustDown(this.cursors.space) && this.nbSaut>0){
                 //si touche haut appuyée ET que le perso touche le sol
-                    this.player.setVelocityY(-400); //alors vitesse verticale négative
-                    this.nbSaut=this.nbSaut-1;
-                    this.player.anims.play('jump', true);
-                    this.jump=true;
+                this.player.anims.play('jump', true);
+                this.player.setVelocityY(-400);
+                this.nbSaut=this.nbSaut-1;
+                this.jump=true;
                 }
 
-                if (Phaser.Input.Keyboard.JustDown(this.keys.e)){
+                if (Phaser.Input.Keyboard.JustDown(this.keys.e) && this.attack!=true){
+                //    this.player.vie=this.player.vie-1;
                 //si touche haut appuyée ET que le perso touche le sol
+                if (this.player.direction=="right"){
                     this.player.anims.play('rightAttack', true);
+                }
+                if (this.player.direction=="left"){
+                    this.player.anims.play('leftAttack', true);
+                }
                     this.attack=true;
                 }
+
                 if (this.player.anims.currentFrame.index>=3 && this.player.anims.currentFrame.index<=17 && this.attack==true && this.premiereHitBoxPerso==false){
                     this.attackPerso = this.physics.add.group();
                     this.attackPerso = this.physics.add.sprite(this.player.x,this.player.y, 'hitBoxPersoAttack').setScale(1);
-                    this.physics.add.overlap(this.attackPerso, this.monstres1, degatMonstre, null, this);
-                    this.attackPerso.setGravity(0,-1500);
+                    this.physics.add.overlap(this.attackPerso, this.monstreGlobal, degatMonstre, null, this);
+                    this.attackPerso.setGravity(0,-500);
                     this.premiereHitBoxPerso=true;
                 }
+
                 if (this.player.anims.currentFrame.index==18 && this.attack==true){
                     this.attack=false;
                     this.premiereHitBoxPerso=false;
                     this.attackPerso.destroy();
                 }
 
+
+
+
                 if (Phaser.Input.Keyboard.JustDown(this.keys.a) && this.afficheScore>=10){
+                    if(this.ameMonstre=="banshee"){
+                        this.player.anims.play('crisAmeBanshee', true);
+                        this.player.setOffset(50,30);
+                        this.attack=true;
+
+
+                    }else{
                     this.afficheScore=this.afficheScore-10;
                     this.scoreArgent.setText(': ' + this.afficheScore);
                     this.scoreArgent.updateText();
                     
                     this.attackPersoFaux = this.physics.add.sprite(this.player.x,this.player.y, 'attackFaux').setScale(2);
-                    this.physics.add.overlap(this.attackPersoFaux, this.monstres1, degatMonstre, null, this);
+                    this.physics.add.overlap(this.attackPersoFaux, this.monstreGlobal, degatMonstre, null, this);
                     this.attackPersoFaux.setGravity(0,-500);
                     this.attackPersoFaux.setVelocityX(300);
 
                     this.attackPersoFaux.anims.play('fauxMouv', true);
+                    }
                 }
+
+
 
                 if(this.player.vie<=0){
                     this.player.anims.play('death', true);
                     this.mort=true;
+                    this.player.disableBody(false,false);
                     if (this.player.anims.currentFrame.index==18){
                         this.gameOver=true;
+                        //this.faux = this.physics.add.sprite(this.player.x, this.player.y, 'faux').setScale(2);
+                        //this.faux.body.setGravity(0,500);
+                        this.setVelocity(0,0);
                         this.player.disableBody(true,true);
                     }
                 }
@@ -522,9 +959,7 @@
             }
 
             verifierHauteur(baudrucheFond1){
-                console.log("ffff");
                 if (baudrucheFond1.y<=0){
-                    console.log("rate");
                     baudrucheFond1.destroy();
                     this.invoqueBaudrucheBackground();
                 }
@@ -541,8 +976,6 @@
                 this.baudrucheFond1.setVelocityY(-(this.vitesse));
                 this.baudrucheFond1.anims.play('battementBaudruche', true);
                 //this.baudrucheFont.add(this.baudrucheFond1);
-                console.log(this.coordX);
-                console.log(this.coordY);
                 //this.physics.add.collider(this.baudrucheFont, this.obstacles);
                 }
         };
@@ -554,39 +987,68 @@
                 gameOver = true;
             }
 
+            function shine(player){
+                this.argent.setTint(0xf0f0f0);
+                this.fantome.destroy();
+                this.sleep(2000).then(() => {
+                    this.argent.setTint(0xffffff);
+                    })
+            }
 
-            function degat(player){
+
+            function degatPlayer(player){
                 if (this.invincible==false){
                     this.invincible=true;
                     this.player.vie=this.player.vie-1;
-                    console.log(this.player.vie);
                 }
             }
 
             function degatMonstre(player,monstre){
-                this.attackPersoFaux.destroy();
-                monstre.vie=monstre.vie-10;
+                //this.attackPersoFaux.destroy();
+                console.log(monstre.invulnerabilite);
+                if (monstre.invulnerabilite==0){
+                    monstre.vie=monstre.vie-10;
+                    monstre.invulnerabilite=40;
+                }
                 if (monstre.vie<=0){
-                    monstre.disableBody(true,true);
+                    //monstre.disableBody(true,true);
+                    this.ameMonstre=monstre.type;
+                    monstre.destroy();
                     this.afficheScore=this.afficheScore+100+Math.floor(Math.random() * 50);
                     this.scoreArgent.setText(': ' + this.afficheScore);
                     this.scoreArgent.updateText();
+
+                    this.fantome = this.fantomes.create(monstre.x,monstre.y, 'fantome').setScale(2).setDepth(2);
+                    this.fantome.anims.play('fantomeApp', true);
+
+                    this.sleep(1200).then(() => {
+                        this.fantome.setScale(1);
+                        this.fantome.setScrollFactor(0);
+                        this.fantome.x=250;
+                        this.fantome.y=250;
+                        this.cameras.main
+                        console.log( monstre.x-this.cameras.main.x);
+                        this.physics.add.overlap(this.fantome, this.argent, shine, null, this);
+                        this.physics.moveToObject(this.fantome, this.argent, 300);
+                        //this.fantome.destroy();
+                    })
                 }
             }
 
-
+            //this.cameras.main.setBounds(0, 0, 2540, 1950);
             var config = {
             pixelArt: true,
             type: Phaser.AUTO,
-            width: 1500, height: 700,
+            //width: 896, height: 448,
+            width: 896, height: 448,
             physics: {
                 default: 'arcade',
                 arcade: {
                 gravity: { y: 500},
-                debug: false
+                debug: true
             }},
 
-            scene: [Tuto,PlayGame]
+            scene: [EcranAccueil,Tuto,PlayGame]
             };
             new Phaser.Game(config);
 
