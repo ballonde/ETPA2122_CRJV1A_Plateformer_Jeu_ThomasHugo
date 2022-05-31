@@ -166,6 +166,9 @@
                 this.taille=0;
                 this.premiereHitBoxMonstreMain=false;
                 this.ameMonstre="banshee";
+                this.cris;
+                this.baudrucheJoueurEnVie=false;
+                this.premiereHitBoxBanshee=false;
         }
         preload(){
             this.load.image('sky', 'assets/sky.png');
@@ -178,7 +181,7 @@
             { frameWidth: 64, frameHeight: 64 });
 
             this.load.spritesheet('compAmeBanshee','assets/spriteSheetAmeBanshee.png',
-            { frameWidth: 128, frameHeight: 70 });
+            { frameWidth: 128, frameHeight: 67 });
 
             this.load.spritesheet('monstreMain','assets/spritesheetMonstre1.png',
             { frameWidth: 128, frameHeight: 128 });
@@ -217,6 +220,26 @@
             this.load.image('backgroundFront_asset', 'assets/backgroundFront.png');
             this.load.image('backgroundBack_asset', 'assets/backgroundBackt.png');
             this.load.tilemapTiledJSON('maptest', 'mapEssai.json');
+
+
+
+
+
+
+
+
+
+            this.load.audio('crisMain', 'assets/sounds/troll-roars.ogg');
+            this.load.audio('entreeCupidon', 'assets/sounds/blessing.ogg');
+            this.load.audio('douleurMain', 'assets/sounds/scrapped-troll-sounds.ogg');
+
+            this.load.audio('attackCupidon', 'assets/sounds/Bow.wav');
+            this.load.audio('ambience', 'assets/sounds/Ambience_Cave_00.wav');
+            this.load.audio('battementBaudruche', 'assets/sounds/heartbeat_fast_0.wav');
+            this.load.audio('AmeMain', 'assets/sounds/swish_3.wav');
+            this.load.audio('attackPerso', 'assets/sounds/swish_4.wav');
+
+            this.load.audio('criBanshee', 'assets/sounds/high_pitch_scream_gverb.mp3');
         }
 
 
@@ -302,6 +325,7 @@
                 this.player.setOffset(20,10);
 
                 this.player.vie=5;
+                this.player.immo=0;
 
                 this.player.direction = 'right';
                 this.player.jumpCount = 0;
@@ -351,6 +375,16 @@
                 key: 'leftAttack',
                 frames: this.anims.generateFrameNumbers('perso', {start:108,end:125}),
                 frameRate: 50,
+                });
+                this.anims.create({
+                key: 'dashRight',
+                frames: this.anims.generateFrameNumbers('perso', {start:144,end:155}),
+                frameRate: 5,
+                });
+                this.anims.create({
+                key: 'dashLeft',
+                frames: this.anims.generateFrameNumbers('perso', {start:162,end:173}),
+                frameRate: 10,
                 });
                 this.cursors = this.input.keyboard.createCursorKeys();
                 this.keys = this.input.keyboard.addKeys({
@@ -426,6 +460,8 @@
                     this.monstre1.setPushable(false);
                     this.monstre1.type="main";
                     this.monstre1.vie=30;
+                    this.monstre1.valeur=20;
+                    this.monstre1.immo=0;
                     this.monstre1.invulnerabilite=0;
                     this.monstre1.attack=false;
                     this.monstre1.coordXOrigine=this.monstre1.x;
@@ -465,13 +501,17 @@
                     this.banshee = this.banshees.create( (banshees.x)*2, (banshees.y)*2-16, 'banshee').setScale(2);
                     this.banshee.setPushable(false);
                     this.banshee.type="banshee";
-                    this.banshee.vie=20;
+                    this.banshee.vie=30;
+                    this.banshee.valeur=50;
+                    this.banshee.immo=0;
                     this.banshee.invulnerabilite=0;
                     this.banshee.attack=false;
+                    this.banshee.cris=false;
                     this.banshee.coordXOrigine=this.banshee.x;
                     this.banshee.direction='left';
-                    this.banshee.setSize(20,45,50,3);
-                    this.banshee.setOffset(53,45);
+                //    this.banshee.setSize(20,45,50,3);
+                this.banshee.setSize(45,20,50,3);
+                    this.banshee.setOffset(40,55);
                     //this.Banshee.setVelocityX(200);
 
                     this.monstreGlobal.add(this.banshee);
@@ -496,6 +536,8 @@
                     this.baudruchePetitEnnemi.setPushable(false);
                     this.baudruchePetitEnnemi.type="baudruche";
                     this.baudruchePetitEnnemi.vie=10;
+                    this.baudruchePetitEnnemi.valeur=20;
+                    this.baudruchePetitEnnemi.immo=0;
                     this.baudruchePetitEnnemi.invulnerabilite=0;
                     this.baudruchePetitEnnemi.attack=false;
 
@@ -568,12 +610,32 @@
                 });
 
 
-               
+                this.anims.create({
+                key: 'crisAmeBansheePerso',
+                frames: this.anims.generateFrameNumbers('perso', {start:126,end:140}),
+                frameRate: 20,
+                });
+
                 this.anims.create({
                 key: 'crisAmeBanshee',
                 frames: this.anims.generateFrameNumbers('compAmeBanshee', {start:0,end:14}),
-                frameRate: 10,
+                frameRate: 20,
                 });
+
+
+                this.baudrucheJoueurs = this.physics.add.group({allowGravity:false});
+
+
+        
+
+
+            this.musiqueAmbiance = this.sound.add('ambience', { loop: true });
+            this.battementBaudruche = this.sound.add('battementBaudruche', { loop: true });
+            this.ameMain = this.sound.add('AmeMain');
+            this.attackFauxPerso = this.sound.add('attackPerso');
+            this.criBanshee = this.sound.add('criBanshee');
+    
+            this.musiqueAmbiance.play();
 
         }
         update(){
@@ -606,7 +668,12 @@
                 if (child.invulnerabilite!=0){
                     child.invulnerabilite=child.invulnerabilite-1;
                     child.setTint(0xff0000);
-                }else{
+                }
+                if (child.immo!=0){
+                    child.immo=child.immo-1;
+                    child.setTint(0x00ff00);
+                }
+                if(child.immo==0 && child.invulnerabilite==0){
                     child.setTint(0xffffff);
                 }
         },this);
@@ -634,11 +701,17 @@
                 if (child.attack==false && child.target==false){
                     child.anims.play('idleBaudruchePetitEnnemi', true);
                 }
+                if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=500 && child.attack!=true){
+                    this.battementBaudruche.play();
+                }
 
                 if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=300 && child.attack!=true){
                     child.anims.play('mouvBaudruchePetitEnnemi', true);
                     child.target=true;
                     this.physics.moveToObject(child, this.player, 300);
+                    if(child.immo!=0){
+                        child.setVelocity(0,0);
+                    }
                     //this.baudruchePetitEnnemi.rotation=90;
                 }
                 
@@ -658,77 +731,163 @@
                         //child.attack=false;
                         //child.destroy();
                         child.disableBody(true,true);
+                        this.battementBaudruche.stop();
                     }
             },this);
 
 
 
             this.banshees.children.iterate(function (child) {
+                if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=250){
+                    child.target=true;
+                }else{
+                    child.target=false;
+                }
+                if (this.player.x>child.x){       
+                    child.rotation=90;
+                    child.direction="right";
+                }
+                if (this.player.x<child.x){
+                    child.rotation=-90;
+                    //child.setRotationOffset(90);
+                    child.direction="left";
+                }
 
-
-                //child.setVelocityX(-300);
                 if (child.attack==false){
-                    if (this.bansheeChangeDirection=Math.floor(Math.random() * 100)<=1){
-                        if (this.bansheeChangeDirectionX=Math.floor(Math.random() * 10)<=5){
-                                this.bansheeDirectionX=-(Math.floor(Math.random() * 500));
-                        }else{
-                            this.bansheeDirectionX=Math.floor(Math.random() * 500)
+                    if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=500 && child.target==false){
+                        if (this.player.x>child.x){
+                            child.setVelocityX(100);
                         }
-                        if (this.bansheeChangeDirectionY=Math.floor(Math.random() * 10)<=5){
-                                this.bansheeDirectionY=-(Math.floor(Math.random() * 500));  
-                        }else{
-                            this.bansheeDirectionY=Math.floor(Math.random() * 500);
+                        if (this.player.x<child.x){
+                            child.setVelocityX(-100);
                         }
-
-                        /*
-                        if (this.speed === undefined) { this.speed = 60; }
-                        if (this.maxTime === undefined) { this.maxTime = 0; }
-
-                        this.angle = Math.atan2(this.bansheeChangeDirectionY - child.y, this.bansheeChangeDirectionX.x - child.x);
-                        console.log(this.angle);
-                        if (this.maxTime > 0){
-                            //  We know how many pixels we need to move, but how fast?
-                            this.dx = child.x - this.bansheeChangeDirectionX;
-                            this.dy = child.y - this.bansheeChangeDirectionY;
-
-                            this.speed = Math.sqrt(this.dx * this.dx + this.dy * this.dy) / (this.maxTime / 1000);
+                        if (this.player.y>child.y){
+                            child.setVelocityY(100);
                         }
-                        child.setVelocityX((Math.cos(this.angle) * this.speed) / 100);
-                        child.setVelocityY((Math.sin(this.angle) * this.speed) / 100);
-                        console.log(this.angle);
-                        child.rotation = this.angle;*/
-
-
-
-
-
-
-
-
-
-
-
-
-                        //child.rotation = Phaser.Math.Angle.Between(child.x, child.y, this.bansheeDirectionX, this.bansheeDirectionY);
-                        //console.log(child.rotation);
-                        child.setVelocity(this.bansheeDirectionX,this.bansheeDirectionY);
+                        if (this.player.y<child.y){
+                            child.setVelocityY(-100);
+                        }
                         child.anims.play('mouvBanshee', true);
+                    }else{ 
+                        child.setVelocity(0,0);
                     }
                 }
 
-                if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=300){
-                    child.anims.play('attackCryBanshee', true);
-                    child.attack=true;
-                    this.sleep(1000).then(() => {
-                        child.attack=false;
-                        //this.premiereHitBoxMonstreMain=false;
-                        //this.attackMonstreMain.destroy();
-                    })
+                if (child.target==true && Math.floor(Math.random() * 100<=1) && child.attack==false){
+                    this.choixAttack=Math.floor(Math.random() * 100);
+
+
+                    if(this.choixAttack>50){
+                        child.setVelocity(0,0);
+                        child.anims.play('attackCryBanshee', true);
+                        child.attack=true;
+                        child.cris=true;
+                        this.criBanshee.play();
+                    }
+
+
+                    if (child.cris==true && this.premiereHitBoxBanshee==false){
+                        this.attackCrisBanshee = this.physics.add.group();
+                        this.attackCrisBanshee = this.physics.add.sprite(child.x,child.y, 'hitBoxPersoAttack');
+                        this.attackCrisBanshee.setGravity(0,-500);
+                        this.premiereHitBoxBanshee=true;
+
+                        if (child.direction=="right"){
+                            this.attackCrisBanshee.setSize(100,150,100,50);
+                            this.attackCrisBanshee.setOffset(50,0);
+                        }
+                        if (child.direction=="left"){
+                            this.attackCrisBanshee.setSize(100,150,100,50);
+                            this.attackCrisBanshee.setOffset(-30,0);    
+                        }
+                    }
+
+                    if(this.choixAttack<=50){
+                        if (this.player.x>child.x){ 
+                            child.setVelocityX(400);
+                            child.anims.play('mouvBanshee', true);
+                        }
+                        if (this.player.x<child.x){
+                            child.setVelocityX(-400);
+                            child.anims.play('mouvBanshee', true);
+                        }
+                        child.attack=true;
+                        this.sleep(1000).then(() => {
+                            child.attack=false;
+                        })
+                    }
+
                 }
+
+                if (child.cris==true){
+                    if(child.anims.currentFrame.index>=13 && child.anims.currentFrame.index<=17){
+                        this.physics.add.overlap(this.attackCrisBanshee, this.player, immoPlayer, null, this);
+                    }
+                    if(child.anims.currentFrame.index==20){
+                        child.attack=false;
+                        child.cris=false;
+                        this.premiereHitBoxBanshee=false;
+                        this.attackCrisBanshee.destroy();
+                    } 
+                }
+
             },this);
-
-
                     
+
+            if (this.baudrucheJoueurEnVie==true){
+                if (this.baudrucheJoueur.attack==false && this.baudrucheJoueur.target==false){
+                    this.baudrucheJoueur.anims.play('idleBaudruchePetitEnnemi', true);
+                    this.baudrucheJoueur.x=this.player.x-100;
+                    this.baudrucheJoueur.y=this.player.y-30;
+                    this.baudrucheJoueur.setTint(0xffff00);
+                }
+
+                this.monstreGlobal.children.iterate(function (child) {     
+                    if(Phaser.Math.Distance.BetweenPoints(this.baudrucheJoueur, child)<this.plusPetiteDistance){
+                        this.cible=child;
+                        this.baudrucheJoueur.target=true;
+                        this.baudrucheJoueur.setTint(0xffff00);
+                    }
+
+                },this);
+
+                if(this.baudrucheJoueur.target==true && this.baudrucheJoueur.attack!=true){
+                    this.baudrucheJoueur.anims.play('mouvBaudruchePetitEnnemi', true);
+                    this.physics.moveToObject(this.baudrucheJoueur, this.cible, 400);
+                    this.baudrucheJoueur.setTint(0xffff00);
+                }
+
+                if(this.baudrucheJoueur.target==true){
+                    if (Phaser.Math.Distance.BetweenPoints(this.baudrucheJoueur, this.cible)<=75){
+                        this.baudrucheJoueur.anims.play('attackBaudrucheExplo', true);
+                        this.baudrucheJoueur.attack=true;
+                        this.baudrucheJoueur.setVelocity(0,0);
+                        this.baudrucheJoueur.setScale(3);
+                        this.baudrucheJoueur.setTint(0xffff00);
+                    }
+                }
+
+                if (this.baudrucheJoueur.anims.currentFrame.index>=8 && this.baudrucheJoueur.attack==true){
+                    this.physics.add.overlap(this.baudrucheJoueur, this.cible, degatMonstre, null, this);
+                    this.baudrucheJoueur.setTint(0xffff00);
+                }
+
+                if (this.baudrucheJoueur.anims.currentFrame.index==15 && this.baudrucheJoueur.attack==true){
+                        //child.attack=false;
+                        this.baudrucheJoueur.destroy();
+                        //this.baudrucheJoueur.disableBody(true,true);
+                        this.baudrucheJoueurEnVie=false;
+                }
+                
+            }
+
+
+
+
+
+
+
+
             //Ia des monstres aus mains géantes
             this.monstres1.children.iterate(function (child) {
 
@@ -758,9 +917,12 @@
                     child.direction='left';
                     child.anims.play('mouvLeftMain', true);
                 }
+
+                if(child.immo!=0){
+                            child.setVelocity(0,0);
+                        }
                 //child.anims.currentFrame.index>2 && child.anims.currentFrame.index<=3 &&
                 if (child.attack==true && this.premiereHitBoxMonstreMain==false){
-                    console.log("test");
                     this.attackMonstreMain = this.physics.add.group();
                     this.attackMonstreMain = this.physics.add.sprite(child.x,child.y, 'hitBoxPersoAttack');
                     this.physics.add.overlap(this.attackMonstreMain, this.player, degatPlayer, null, this);
@@ -796,6 +958,15 @@
 
 
             //frame invul
+            if (this.player.immo!=0){
+                this.player.setVelocityX(0);
+                this.player.immo=this.player.immo-1;
+                this.player.setTint(0x00ff00);
+            }
+            if(this.player.immo==0 && this.compteurInva == 0){
+                this.player.setTint(0xffffff);
+            }
+
             if(this.invincible == true){
                 this.compteurInva-- ;
                 this.player.setTint(0xff0000);
@@ -805,6 +976,7 @@
                     this.invincible = false ;
                 }
             }
+
 
             if (this.cursors.left.isDown){
                 this.moveLeft=true;
@@ -838,24 +1010,21 @@
                 if (this.dashVal>0){
                     this.dashVal = this.dashVal -600
                     this.player.setVelocity(0,0);
-                    if (this.player.direction == "down"){
-                        this.player.setVelocityY(600);
-                    }
-                    else if (this.player.direction == "left"){
+
+                    if (this.player.direction == "left"){
                         this.player.setVelocityX(-600);
-                    }
-                    else if (this.player.direction == "up"){
-                        this.player.setVelocityY(-600);
+                        this.player.anims.play('dashLeft', true)
                     }
                     else if (this.player.direction == "right"){
                         this.player.setVelocityX(600);
+                        this.player.anims.play('dashRight', true)
                     }
 
                 };
             if (this.dashVal<0){this.dashVal = 0};
 
 
-            if (this.dashVal==0 && this.mort!=true){
+            if (this.dashVal==0 && this.mort!=true && this.cris!=true && this.player.immo==0){
                 if (this.moveLeft){
                     this.player.setVelocityX(-350); //alors vitesse négative en X
                     if (this.jump==false && this.attack==false && this.mort==false){
@@ -874,13 +1043,16 @@
                         this.player.anims.play('turn', true); //et animation => gauche
                     }
                 }
+
+            }
+
                 if (this.player.body.onFloor() && this.jump==true){
                     this.nbSaut=2;
                     this.jump=false;
                     this.attack=false;
                 }
 
-                if (Phaser.Input.Keyboard.JustDown(this.cursors.space) && this.nbSaut>0){
+                if (Phaser.Input.Keyboard.JustDown(this.cursors.space) && this.nbSaut>0 && this.cris!=true && this.player.immo==0){
                 //si touche haut appuyée ET que le perso touche le sol
                 this.player.anims.play('jump', true);
                 this.player.setVelocityY(-400);
@@ -888,16 +1060,18 @@
                 this.jump=true;
                 }
 
-                if (Phaser.Input.Keyboard.JustDown(this.keys.e) && this.attack!=true){
-                //    this.player.vie=this.player.vie-1;
-                //si touche haut appuyée ET que le perso touche le sol
-                if (this.player.direction=="right"){
-                    this.player.anims.play('rightAttack', true);
-                }
-                if (this.player.direction=="left"){
-                    this.player.anims.play('leftAttack', true);
-                }
-                    this.attack=true;
+
+                console.log(this.attackFauxPerso);
+                if (Phaser.Input.Keyboard.JustDown(this.keys.e) && this.attack!=true && this.player.immo==0){
+                    if (this.player.direction=="right"){
+                        this.player.anims.play('rightAttack', true);
+                        this.attackFauxPerso.play();
+                    }
+                    if (this.player.direction=="left"){
+                        this.player.anims.play('leftAttack', true);
+                        this.attackFauxPerso.play();
+                    }
+                        this.attack=true;
                 }
 
                 if (this.player.anims.currentFrame.index>=3 && this.player.anims.currentFrame.index<=17 && this.attack==true && this.premiereHitBoxPerso==false){
@@ -908,6 +1082,7 @@
                     this.premiereHitBoxPerso=true;
                 }
 
+
                 if (this.player.anims.currentFrame.index==18 && this.attack==true){
                     this.attack=false;
                     this.premiereHitBoxPerso=false;
@@ -916,28 +1091,74 @@
 
 
 
-
-                if (Phaser.Input.Keyboard.JustDown(this.keys.a) && this.afficheScore>=10){
-                    if(this.ameMonstre=="banshee"){
-                        this.player.anims.play('crisAmeBanshee', true);
-                        this.player.setOffset(50,30);
-                        this.attack=true;
-
-
-                    }else{
-                    this.afficheScore=this.afficheScore-10;
-                    this.scoreArgent.setText(': ' + this.afficheScore);
-                    this.scoreArgent.updateText();
-                    
-                    this.attackPersoFaux = this.physics.add.sprite(this.player.x,this.player.y, 'attackFaux').setScale(2);
-                    this.physics.add.overlap(this.attackPersoFaux, this.monstreGlobal, degatMonstre, null, this);
-                    this.attackPersoFaux.setGravity(0,-500);
-                    this.attackPersoFaux.setVelocityX(300);
-
-                    this.attackPersoFaux.anims.play('fauxMouv', true);
-                    }
+                if (this.player.anims.currentFrame.index>=3 && this.player.anims.currentFrame.index<=15 && this.cris==true){
+                    this.physics.add.overlap(this.criBansheePerso, this.monstreGlobal, immoMonstre, null, this);
                 }
 
+                if (this.cris==true && this.player.anims.currentFrame.index>=14){
+                            this.criBansheePerso.destroy();
+                            this.cris=false;
+                }
+
+
+                if (Phaser.Input.Keyboard.JustDown(this.keys.a) && this.player.immo==0){
+                    if(this.ameMonstre=="banshee" && this.afficheScore>=20){
+                        this.afficheScore=this.afficheScore-20;
+                        this.scoreArgent.setText(': ' + this.afficheScore);
+                        this.scoreArgent.updateText();
+
+                        console.log(this.cris);
+                        this.criBansheePerso = this.physics.add.sprite(this.player.x,this.player.y-40, 'compAmeBanshee').setScale(2);
+                        this.criBansheePerso.anims.play('crisAmeBanshee', true);
+                        this.criBansheePerso.setGravityY(-500);
+                        this.player.anims.play('crisAmeBansheePerso', true);
+                        //this.player.setOffset(50,30);
+                        this.cris=true;
+                        this.player.setVelocity(0,0);
+                    }
+
+
+                    if (this.ameMonstre=="baudruche" && this.afficheScore>=40){
+                        this.afficheScore=this.afficheScore-40;
+                        this.scoreArgent.setText(': ' + this.afficheScore);
+                        this.scoreArgent.updateText();
+
+                        if (this.baudrucheJoueurEnVie==false){
+                            this.baudrucheJoueur = this.baudrucheJoueurs.create( this.player.x, this.player.y, 'baudruchePetitEnnemi');
+                            this.baudrucheJoueur.setPushable(false);
+                            this.baudrucheJoueur.type="baudruche";
+                            this.baudrucheJoueur.vie=10;
+                            this.baudrucheJoueur.immo=0;
+                            this.baudrucheJoueur.invulnerabilite=0;
+                            this.baudrucheJoueur.attack=false;
+                            this.baudrucheJoueur.target=false;
+                            this.baudrucheJoueur.setTint(0xffff00);
+
+                            this.baudrucheJoueurEnVie=true;
+                            this.plusPetiteDistance=300;
+                            this.cible;
+                        }
+                        this.baudrucheJoueurEnVie=true;
+                    }
+
+
+                    if (this.ameMonstre=="main" && this.afficheScore>=10){
+                        this.afficheScore=this.afficheScore-10;
+                        this.scoreArgent.setText(': ' + this.afficheScore);
+                        this.scoreArgent.updateText();
+                        
+                        this.attackPersoFaux = this.physics.add.sprite(this.player.x,this.player.y, 'attackFaux').setScale(2);
+                        this.physics.add.overlap(this.attackPersoFaux, this.monstreGlobal, degatMonstre, null, this);
+                        this.attackPersoFaux.setGravity(0,-500);
+                        this.ameMain.play();
+                        if (this.player.direction=="right"){
+                            this.attackPersoFaux.setVelocityX(300);
+                        }else{
+                            this.attackPersoFaux.setVelocityX(-300);
+                        }
+                        this.attackPersoFaux.anims.play('fauxMouv', true);
+                    }
+                }
 
 
                 if(this.player.vie<=0){
@@ -955,7 +1176,7 @@
                 /*if (this.moveDown){
                     this.player.setBounce(-1);
                 }*/
-            }
+
             }
 
             verifierHauteur(baudrucheFond1){
@@ -995,6 +1216,21 @@
                     })
             }
 
+            function immoPlayer(player,monstre){
+                //this.attackPersoFaux.destroy();
+                console.log("immo");
+                if (this.player.immo==0){
+                    this.player.immo=100;
+                }
+                console.log(this.player.immo);
+            }
+
+            function immoMonstre(player,monstre){
+                //this.attackPersoFaux.destroy();
+                if (monstre.immo==0){
+                    monstre.immo=100;
+                }
+            }
 
             function degatPlayer(player){
                 if (this.invincible==false){
@@ -1005,7 +1241,6 @@
 
             function degatMonstre(player,monstre){
                 //this.attackPersoFaux.destroy();
-                console.log(monstre.invulnerabilite);
                 if (monstre.invulnerabilite==0){
                     monstre.vie=monstre.vie-10;
                     monstre.invulnerabilite=40;
@@ -1014,7 +1249,7 @@
                     //monstre.disableBody(true,true);
                     this.ameMonstre=monstre.type;
                     monstre.destroy();
-                    this.afficheScore=this.afficheScore+100+Math.floor(Math.random() * 50);
+                    this.afficheScore=this.afficheScore+monstre.valeur+Math.floor(Math.random() * 15);
                     this.scoreArgent.setText(': ' + this.afficheScore);
                     this.scoreArgent.updateText();
 
@@ -1026,8 +1261,8 @@
                         this.fantome.setScrollFactor(0);
                         this.fantome.x=250;
                         this.fantome.y=250;
-                        this.cameras.main
-                        console.log( monstre.x-this.cameras.main.x);
+                        //this.cameras.main
+                        //console.log( monstre.x-this.cameras.main.x);
                         this.physics.add.overlap(this.fantome, this.argent, shine, null, this);
                         this.physics.moveToObject(this.fantome, this.argent, 300);
                         //this.fantome.destroy();
