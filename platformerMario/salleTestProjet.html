@@ -171,10 +171,6 @@
                 this.premiereHitBoxBanshee=false;
         }
         preload(){
-            this.load.image('sky', 'assets/sky.png');
-            this.load.image('ground', 'assets/platform.png');
-            this.load.image('star', 'assets/star.png');
-            this.load.image('bomb', 'assets/bomb.png');
             //this.load.spritesheet('perso','assets/perso.png',
             //{ frameWidth: 32, frameHeight: 48 });
             this.load.spritesheet('perso','assets/spritesheetPerso.png',
@@ -188,6 +184,25 @@
 
             this.load.spritesheet('banshee','assets/spriteSheetBanshee.png',
             { frameWidth: 128, frameHeight: 128 });
+
+
+            
+            this.load.spritesheet('cupidon','assets/spriteSheetCupidon.png',
+            { frameWidth: 128, frameHeight: 96 });
+
+            this.load.spritesheet('cupidonAuras','assets/spriteSheetCupidonAurasCoeurTournoiyant.png',
+            { frameWidth: 128, frameHeight: 64 });
+
+           /* this.load.spritesheet('arrowsRightcupidon','assets/arrowRightCupidon.png',
+            { frameWidth: 16, frameHeight:5 });
+            this.load.spritesheet('arrowsLeftcupidon','assets/flecheCupidon.png',
+            { frameWidth: 16, frameHeight: 5 });*/
+
+            this.load.image('arrowsRightcupidon', 'assets/arrowRightCupidon.png');
+            this.load.image('arrowsLeftcupidon', 'assets/assets/flecheCupidon.png');
+
+
+
 
             this.load.spritesheet('baudruchePetitEnnemi','assets/spritesheetBaudruchePetitEnnemis.png',
             { frameWidth: 64, frameHeight: 64 });
@@ -219,6 +234,7 @@
             this.load.image('decor_asset', 'assets/assetsDecors.png');
             this.load.image('backgroundFront_asset', 'assets/backgroundFront.png');
             this.load.image('backgroundBack_asset', 'assets/backgroundBackt.png');
+            this.load.image('murSpecial', 'assets/murSpecial.png');
             this.load.tilemapTiledJSON('maptest', 'mapEssai.json');
 
 
@@ -318,8 +334,8 @@
                 //this.platforms.create(50, 260, 'ground');
                 //this.platforms.create(750, 230, 'ground');
                 
-
-                this.player = this.physics.add.sprite(2944, 640, 'perso').setScale(2);
+                this.player = this.physics.add.sprite(2344,6000, 'perso').setScale(2);
+                //this.player = this.physics.add.sprite(2944, 2640, 'perso').setScale(2);
 
                 this.player.setSize(20,40,0,3);
                 this.player.setOffset(20,10);
@@ -389,7 +405,7 @@
                 this.cursors = this.input.keyboard.createCursorKeys();
                 this.keys = this.input.keyboard.addKeys({
                     a:  Phaser.Input.Keyboard.KeyCodes.A,
-                    d:  Phaser.Input.Keyboard.KeyCodes.D,
+                    z:  Phaser.Input.Keyboard.KeyCodes.Z,
                     e:  Phaser.Input.Keyboard.KeyCodes.E,
                 });
 
@@ -568,12 +584,122 @@
 
 
 
+                this.cupidonBoss = this.physics.add.group({allowGravity:false});
+                this.mapTest.getObjectLayer('boss').objects.forEach((cupidonBoss)=>{
+                    this.cupidon = this.cupidonBoss.create( (cupidonBoss.x)*2, (cupidonBoss.y)*2-16, 'cupidon').setScale(3);
+                    this.cupidon.setPushable(false);
+                    this.cupidon.type="cupidon";
+                    this.cupidon.vie=100;
+                    this.cupidon.valeur=20;
+                    this.cupidon.immo=0;
+                    this.cupidon.aura=false;
+                    this.cupidon.attack=false;
+                    this.cupidon.tir=false;
+                    this.cupidon.invulnerabilite=0;
+                    this.cupidon.attack=false;
+
+                    this.cupidon.target=false;
+                    this.monstreGlobal.add(this.cupidon);
+                })
+
+                this.anims.create({
+                key: 'lancementAurasCupidon',
+                frames: this.anims.generateFrameNumbers('cupidon', {start:0,end:13}),
+                frameRate: 10,
+                });
+
+                this.anims.create({
+                key: 'cupidonIdle',
+                frames: this.anims.generateFrameNumbers('cupidon', {start:14,end:22}),
+                frameRate: 10,
+                repeat: -1
+                });
+
+                this.anims.create({
+                key: 'cupidonAttackRight',
+                frames: this.anims.generateFrameNumbers('cupidon', {start:42,end:49}),
+                frameRate: 10,
+                });
+                this.anims.create({
+                key: 'cupidonAttackLeft',
+                frames: this.anims.generateFrameNumbers('cupidon', {start:28,end:35}),
+                frameRate: 10,
+                });
+
+
+                this.auraCupidonBoss = this.physics.add.group({allowGravity:false});
+                this.physics.add.overlap(this.auraCupidonBoss, this.player, degatPlayer, null, this);
+                this.anims.create({
+                key: 'auraActive',
+                frames: this.anims.generateFrameNumbers('cupidonAuras', {start:0,end:5}),
+                frameRate: 10,
+                repeat: -1
+                });
+
+                this.arrows = this.physics.add.group({allowGravity:false});
+                this.physics.add.overlap(this.arrows, this.player, degatPlayer, null, this);
+
+
+
+
                 this.baudrucheSol = this.physics.add.group({allowGravity:false});
 
                 this.mapTest.getObjectLayer('baudrucheSol').objects.forEach((baudrucheSol)=>{
                 this.baudrucheSol1 = this.baudrucheSol.create(baudrucheSol.x*2,baudrucheSol.y*2, 'baudruchePlatformeSolAme').setScale(2).setDepth(1);
                 this.baudrucheSol1.anims.play('battementBaudrucheSol', true);
                 })
+
+                this.murSpeciaux1 = this.physics.add.staticGroup();
+                this.physics.add.collider(this.murSpeciaux1, this.player);
+
+                this.mapTest.getObjectLayer('murSpeciaux1').objects.forEach((murSpeciaux1)=>{
+                    this.murSpecial = this.murSpeciaux1.create( (murSpeciaux1.x)*2+32, (murSpeciaux1.y)*2-32, 'murSpecial').setScale(2);
+                    //this.murSpecial.setPushable(false);
+                })
+
+                this.murSpeciaux2 = this.physics.add.staticGroup();
+                this.physics.add.collider(this.murSpeciaux2, this.player);
+
+                this.mapTest.getObjectLayer('murSpeciaux2').objects.forEach((murSpeciaux2)=>{
+                    this.murSpecial = this.murSpeciaux2.create( (murSpeciaux2.x)*2+32, (murSpeciaux2.y)*2-32, 'murSpecial').setScale(2);
+                    //this.murSpecial.setPushable(false);
+                })
+
+                this.murSpeciaux3 = this.physics.add.staticGroup();
+                this.physics.add.collider(this.murSpeciaux3, this.player);
+
+                this.mapTest.getObjectLayer('murSpeciaux3').objects.forEach((murSpeciaux3)=>{
+                    this.murSpecial = this.murSpeciaux3.create( (murSpeciaux3.x)*2+32, (murSpeciaux3.y)*2-32, 'murSpecial').setScale(2);
+                    //this.murSpecial.setPushable(false);
+                })
+
+
+                this.leviers1 = this.physics.add.staticGroup();
+                this.physics.add.overlap(this.player, this.leviers1, activeLevier1, null, this);
+
+                this.mapTest.getObjectLayer('levier1').objects.forEach((leviers1)=>{
+                    this.levier = this.leviers1.create( (leviers1.x)*2+32, (leviers1.y)*2-32, 'lenterne').setScale(2);
+                    //this.murSpecial.setPushable(false);
+                })
+
+                this.leviers2 = this.physics.add.staticGroup();
+                this.physics.add.overlap(this.player, this.leviers2, activeLevier2, null, this);
+
+                this.mapTest.getObjectLayer('levier2').objects.forEach((leviers2)=>{
+                    this.levier = this.leviers2.create( (leviers2.x)*2+32, (leviers2.y)*2-32, 'lenterne').setScale(2);
+                    //this.murSpecial.setPushable(false);
+                })
+
+                this.leviers3 = this.physics.add.staticGroup();
+                this.physics.add.overlap(this.player, this.leviers3, activeLevier3, null, this);
+
+                this.mapTest.getObjectLayer('levier3').objects.forEach((leviers3)=>{
+                    this.levier = this.leviers3.create( (leviers3.x)*2+32, (leviers3.y)*2-32, 'lenterne').setScale(2);
+                    //this.murSpecial.setPushable(false);
+                })
+
+
+
 
 
                 this.anims.create({
@@ -710,6 +836,50 @@
             this.sleep = (milliseconds) => {
                         return new Promise(resolve => setTimeout(resolve, milliseconds));
             }
+
+
+            this.cupidonBoss.children.iterate(function (child) {
+                this.actionBoss=Math.floor(Math.random() * 100);
+
+
+                if (this.actionBoss<10 && child.tir!=true && child.aura!=true && child.lanceAura!=true && child.tir!=true){
+                    this.actionBossChoix=Math.floor(Math.random() * 100);
+                }
+
+                if (this.actionBossChoix=Math.floor(Math.random() * 100) >=20 && (this.actionBossChoix=Math.floor(Math.random() * 100) <40 && child.aura!=true && child.lanceAura!=true && child.tir!=true)){
+                    child.anims.play('cupidonAttackRight', true);
+                    child.tir=true;
+                    this.arrow = this.arrows.create((child.x), (child.y), 'arrowsRightCupidon').setScale(2);
+                    this.arrow.setVelocityX(300);
+                }
+
+                if (child.tir==true){
+                    if(child.anims.currentFrame.index==8){
+                        child.tir=false;
+                    }
+                }
+
+
+                if (this.actionBossChoix=Math.floor(Math.random() * 100) <20 && child.aura!=true && child.lanceAura!=true && child.tir!=true){
+                    child.anims.play('lancementAurasCupidon', true);
+                    child.lanceAura=true;
+                }
+                if (child.lanceAura==true && child.anims.currentFrame.index==14 && child.aura!=true && child.tir!=true){
+                    child.anims.play('cupidonIdle', true);
+                    this.auraCupidon = this.auraCupidonBoss.create((child.x), (child.y), 'cupidonAuras').setScale(2);
+                    this.auraCupidon.anims.play('auraActive', true);
+                    child.aura=true;
+                    child.lanceAura=false;
+                    this.sleep(5000).then(() => {
+                        child.aura=false;
+                        this.auraCupidon.destroy();
+                    })
+                }
+               
+            },this);
+
+
+
             this.baudruchePetitEnnemis.children.iterate(function (child) {
                 //child.setVelocityX(-300);
                 if (child.attack==false && child.target==false){
@@ -1027,7 +1197,7 @@
             //console.log(this.input.keyboard.checkDown(this.keys.d,9000));
             //console.log(this.dash);
 
-            if (this.input.keyboard.checkDown(this.keys.d,9000)==true && this.dash==false && this.mort!=true && this.player.immo==0){
+            if (this.input.keyboard.checkDown(this.keys.z,9000)==true && this.dash==false && this.mort!=true && this.player.immo==0){
                 this.dash=true;
                 this.timedEvent = this.time.delayedCall(300, this.stopDash, [], this);//je ne sais pas pourquoi mais les fonction delayedCall et TimeOut s'execute plusieur fois d'affilés
             };
@@ -1190,9 +1360,9 @@
                         this.attackPersoFaux.setGravity(0,-500);
                         this.ameMain.play();
                         if (this.player.direction=="right"){
-                            this.attackPersoFaux.setVelocityX(300);
+                            this.attackPersoFaux.setVelocityX(500);
                         }else{
-                            this.attackPersoFaux.setVelocityX(-300);
+                            this.attackPersoFaux.setVelocityX(-500);
                         }
                         this.attackPersoFaux.anims.play('fauxMouv', true);
                     }
@@ -1272,6 +1442,43 @@
                     this.player.vie=this.player.vie-1;
                 }
             }
+
+            function activeLevier1(player){
+                if (this.keys.e.isDown){
+                    //this.murSpeciaux1.destroy();
+                    this.murSpeciaux1.children.iterate(function (child) {
+                        //child.destroy();
+                        child.disableBody(true,true);
+                    },this);
+                }
+            }
+
+            function activeLevier2(player){
+                if (this.keys.e.isDown){
+                    //this.murSpeciaux2.destroy();
+                    this.murSpeciaux2.children.iterate(function (child) {
+                        //child.destroy();
+                        child.disableBody(true,true);
+                    },this);
+                }
+            }
+
+            function activeLevier3(player){
+                if (this.keys.e.isDown){
+                    this.murSpeciaux3.children.iterate(function (child) {
+                        //child.destroy();
+                        child.disableBody(true,true);
+                    },this);
+
+                    this.murSpeciaux4 = this.physics.add.staticGroup();
+                    this.physics.add.collider(this.murSpeciaux4, this.player);
+
+                    this.mapTest.getObjectLayer('murSpeciaux4').objects.forEach((murSpeciaux4)=>{
+                        this.murSpecial = this.murSpeciaux4.create( (murSpeciaux4.x)*2+32, (murSpeciaux4.y)*2-32, 'murSpecial').setScale(2);
+                        //this.murSpecial.setPushable(false);
+                    })                    
+                }
+            }
             
             function changeDirection(monstre){
                 if (monstre.direction=="right"){
@@ -1312,7 +1519,7 @@
             pixelArt: true,
             type: Phaser.AUTO,
             //width: 896, height: 448,
-            width: 896, height: 448,
+            width: 1000, height: 500,
             physics: {
                 default: 'arcade',
                 arcade: {
