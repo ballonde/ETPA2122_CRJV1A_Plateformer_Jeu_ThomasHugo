@@ -21,6 +21,7 @@
                 this.load.image('ecranAccueil','assets/ecranAccueil2.png');
             }
             create(){
+                ///assembler l'ecran d'accueil avec les différents boutons
                 this.ecranAccueil= this.physics.add.staticGroup();
                 this.ecranAccueil.create(500, 250, 'ecranAccueil').setScale(2.3).refreshBody();
                 
@@ -35,8 +36,9 @@
                 });
             }
             update(){
+                //fonction pour quitter l'écran d'accueil
                 if ( this.keys.a.isDown){
-                    this.scene.start('Tuto',{
+                    this.scene.start('Jeu',{
                     });
                 }
             }
@@ -54,9 +56,46 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        class Tuto extends Phaser.Scene{
+class EcranFin extends Phaser.Scene{
             constructor(){
-                super("Tuto");
+                super("EcranFin");
+            }
+            preload(){
+                this.load.image('ecranFin','assets/ecranFin.png');
+            }
+            create(){
+                ///assembler l'ecran d'accueil avec les différents boutons
+                this.ecranFin= this.physics.add.staticGroup();
+                this.ecranFin.create(500, 250, 'ecranFin').setScale(2.3).refreshBody();
+                
+                this.keys = this.input.keyboard.addKeys({
+                    a:  Phaser.Input.Keyboard.KeyCodes.A,
+                });
+            }
+            update(){
+                //fonction pour quitter l'écran d'accueil
+                if ( this.keys.a.isDown){
+                    this.scene.start('EcranAccueil',{
+                    });
+                }
+            }
+        }
+   
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        class Jeu extends Phaser.Scene{
+            constructor(){
+                super("Jeu");
                 this.dashVal=0;
                 this.dash=false;
                 this.nbSaut=2;
@@ -76,11 +115,20 @@
                 this.baudrucheJoueurEnVie=false;
                 this.premiereHitBoxBanshee=false;
                 this.change=true;
+                this.animation=false;
+                this.dialogue=false;
+                this.dialogueEnCours=false;
+                this.texteToucheEnCours=false;
+                this.texteFinEnCours=false;
+                this.vol=false;
+
         }
         preload(){
-            //this.load.spritesheet('perso','assets/perso.png',
-            //{ frameWidth: 32, frameHeight: 48 });
+
             this.load.spritesheet('perso','assets/spritesheetPerso.png',
+            { frameWidth: 64, frameHeight: 64 });
+
+            this.load.spritesheet('persoVol','assets/spriteSheetHeroVol.png',
             { frameWidth: 64, frameHeight: 64 });
 
             this.load.spritesheet('compAmeBanshee','assets/spriteSheetAmeBanshee.png',
@@ -100,13 +148,10 @@
             this.load.spritesheet('cupidonAuras','assets/spriteSheetCupidonAurasCoeurTournoiyant.png',
             { frameWidth: 128, frameHeight: 64 });
 
-            //this.load.spritesheet('arrowsRightcupidon','assets/arrowRightCupidon.png',
-            //{ frameWidth: 16, frameHeight:5 });
-            //this.load.spritesheet('arrowsLeftcupidon','assets/flecheCupidon.png',
-            //{ frameWidth: 16, frameHeight: 5 });
-
             this.load.image('arrowsRightCupidon', 'assets/flecheRightCupidon.png');
             this.load.image('arrowsLeftCupidon', 'assets/flecheCupidon.png');
+            this.load.image('texteTouche', 'assets/texteTouche.png');
+            this.load.image('texteFin', 'assets/texteFin.png');
 
 
 
@@ -132,6 +177,12 @@
             this.load.spritesheet('fantome','assets/spritesheetFantome.png',
             { frameWidth: 32, frameHeight: 50 });
 
+            this.load.spritesheet('dialogue1','assets/spritesheetDialogue1.png',
+            { frameWidth: 150, frameHeight: 39 });
+
+
+
+
             this.load.spritesheet('faux','assets/faux.png',
             { frameWidth: 64, frameHeight: 64 });
 
@@ -141,22 +192,25 @@
             this.load.spritesheet('lenterneArgent', 'assets/lenterne.png',
             { frameWidth: 48, frameHeight: 96 });
 
+
+            this.load.spritesheet('grandePlante', 'assets/planteGrande-Sheet.png',
+            { frameWidth:32, frameHeight: 32 });
+
+            this.load.spritesheet('plante', 'assets/Plante-Sheet.png',
+            { frameWidth:32, frameHeight: 16 });
+
+
             this.load.image('decor_asset', 'assets/assetsDecors.png');
-
-
+            this.load.image('assets', 'assets/assets.png');
             this.load.image('levier', 'assets/levier.png');
-
-
             this.load.image('backgroundFront_asset', 'assets/backgroundFront.png');
+            this.load.image('backgroundFond_asset', 'assets/backgroundFond.png');
             this.load.image('backgroundBack_asset', 'assets/backgroundBackt.png');
             this.load.image('murSpecial', 'assets/murSpecial.png');
             this.load.tilemapTiledJSON('maptest', 'mapEssai.json');
 
-            
- //           this.load.image('portraitBanshee', 'assets/portraitBanshee.png');
-//         this.load.image('portraitMain', 'assets/portraitMain.png');
- //           this.load.image('portraitBaudruche', 'assets/portraitBaudruche.png');
-   //         this.load.image('portraitCupidon', 'assets/portraitCupidon.png');
+
+
 
             this.load.spritesheet('portraitBanshee', 'assets/portraitBanshee.png',
             { frameWidth: 20, frameHeight: 16 });
@@ -182,33 +236,57 @@
             this.load.audio('attackPerso', 'assets/sounds/swish_4.wav');
 
             this.load.audio('criBanshee', 'assets/sounds/high_pitch_scream_gverb.mp3');
+
+
+            this.load.image('particuleBlack', 'assets/particuleBlack.png');
+            this.load.image('roi', 'assets/roi.png');
+
         }
 
 
         create(){
-
+            //creer la map
             this.mapTest=this.add.tilemap('maptest');
                 this.tileset = this.mapTest.addTilesetImage(
                     "assetsDecors",
                     "decor_asset"
-                    );
+                );
                 this.tileset2 = this.mapTest.addTilesetImage(
                     "backgroundBackt",
-                    "backgroundBack_asset"
-                    );
+                    "backgroundBack_asset",
+                );
                 this.tileset3 = this.mapTest.addTilesetImage(
                     "backgroundFront",
                     "backgroundFront_asset"
+                );
+    
+                this.tileset4 = this.mapTest.addTilesetImage(
+                    "backgroundFond",
+                    "backgroundFond_asset"
+                );
+                    
+                this.tileset5 = this.mapTest.addTilesetImage(
+                    "assets",
+                    "assets"
+                );
+
+                this.backgrounds2 = this.mapTest.createLayer(
+                    "background2",
+                    this.tileset4,
                     );
-                
+
                 this.backgrounds = this.mapTest.createLayer(
                     "background",
-                    this.tileset2
+                    this.tileset2,
                     );
                 
                 this.backgrounds_back = this.mapTest.createLayer(
                     "background_Back",
-                    this.tileset2
+                    this.tileset2,
+                    );
+                this.backgrounds_back2 = this.mapTest.createLayer(
+                    "background_Back2",
+                    this.tileset4,
                     );
                 
                 this.anims.create({
@@ -240,45 +318,54 @@
                     this.tileset
                     );
 
+                this.decors = this.mapTest.createLayer(
+                    "assets",
+                    this.tileset5,
+                    );
+
                 this.backgrounds.setScale(2);
                 this.backgrounds.setDepth(-3);
+                this.backgrounds.setScrollFactor(0.8);
                 this.backgrounds_back.setScale(2);
                 this.backgrounds_back.setScrollFactor(0.8);
                 this.backgrounds_back.setDepth(-2);
+
+                this.backgrounds2.setScale(2);
+                this.backgrounds2.setDepth(-3);
+                this.backgrounds2.setScrollFactor(0.8);
+                this.backgrounds_back2.setScale(2);
+                this.backgrounds_back2.setScrollFactor(0.8);
+                this.backgrounds_back2.setDepth(-2);
+
                 this.backgrounds_int.setScale(2);
                 this.backgrounds_front.setScale(2);
                 this.obstacles.setScale(2);
+
+                this.decors.setScale(2);
+                this.decors.setDepth(2);
     
                 this.obstacles.setCollisionByProperty({ estSolide: true});
 
-
-                //this.add.image(400, 300, 'sky');
-
                 this.platforms = this.physics.add.staticGroup();
-                //this.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-                //this.platforms.create(600, 400, 'ground');
-                //this.platforms.create(50, 260, 'ground');
-                //this.platforms.create(750, 230, 'ground');
-                
-                this.player = this.physics.add.sprite(3000,600, 'perso').setScale(2);
-                //this.player = this.physics.add.sprite(2944, 2640, 'perso').setScale(2);
 
+                
+
+                //creation du joueur et des différents réglages
+                //this.player = this.physics.add.sprite(3000,800, 'perso').setScale(2);
+                this.player = this.physics.add.sprite(2300,6000, 'perso').setScale(2);
+                //this.player = this.physics.add.sprite(500,1600, 'perso').setScale(2);
                 this.player.setSize(20,40,0,3);
                 this.player.setOffset(20,10);
-
                 this.player.vie=5;
                 this.player.immo=0;
-
                 this.player.direction = 'right';
                 this.player.jumpCount = 0;
                 this.player.setCollideWorldBounds(true);
                 this.physics.add.collider( this.player,  this.platforms);
                 this.physics.add.collider(this.player, this.obstacles);
 
-                this.physics.world.setBounds(0, 0,9600, 6400);
-                this.cameras.main.setBounds(0, 0, 9600, 6400);
-                this.cameras.main.startFollow(this.player);
 
+                this.player.setMaxVelocity(1000,1000); 
 
                 this.anims.create({
                 key: 'right',
@@ -329,26 +416,100 @@
                 frameRate: 35,
                 });
 
-
                 this.anims.create({
                 key: 'degat',
                 frames: this.anims.generateFrameNumbers('perso', {start:54,end:56}),
                 frameRate: 15,
                 });
+                this.player.anims.play('turn', true);
 
 
+
+                this.anims.create({
+                key: 'persoVolUp',
+                frames: this.anims.generateFrameNumbers('persoVol', {start:0,end:3}),
+                frameRate: 10,
+                repeat:-1
+                });
+                this.anims.create({
+                key: 'persoVolDown',
+                frames: this.anims.generateFrameNumbers('persoVol', {start:4,end:7}),
+                frameRate: 10,
+                repeat:-1
+                });
+                this.anims.create({
+                key: 'persoVolRight',
+                frames: this.anims.generateFrameNumbers('persoVol', {start:8,end:11}),
+                frameRate: 10,
+                repeat:-1
+                });
+                this.anims.create({
+                key: 'persoVolLeft',
+                frames: this.anims.generateFrameNumbers('persoVol', {start:12,end:15}),
+                frameRate: 10,
+                repeat:-1
+                });
+
+
+
+
+                //animationNarrative
+                this.pnj = this.physics.add.sprite(3500,750, 'perso').setScale(2);
+                this.pnj.setSize(20,40,0,3);
+                this.pnj.setOffset(20,10);
+                this.physics.add.collider(this.pnj, this.obstacles);
+                this.player.anims.play('turn', true);
+
+                this.anims.create({
+                key: 'dialogue1Animation1',
+                frames: this.anims.generateFrameNumbers('dialogue1', {start:0,end:6}),
+                frameRate: 5,
+                });
+                this.anims.create({
+                key: 'dialogue2Animation1',
+                frames: this.anims.generateFrameNumbers('dialogue1', {start:7,end:11}),
+                frameRate: 5,
+                });
+                this.anims.create({
+                key: 'dialogue3Animation1',
+                frames: this.anims.generateFrameNumbers('dialogue1', {start:12,end:16}),
+                frameRate: 5,
+                });
+
+
+
+                this.PnjImp = this.physics.add.group({allowGravity:false});
+                //this.roi = this.PnjImp.create(6272, 448, 'roi').setScale(2);
+                this.roi = this.PnjImp.create(6000, 448, 'roi').setScale(2);
+
+
+
+
+                
+                //Réglage camera
+                this.physics.world.setBounds(0, 0,9600, 6400);
+                this.cameras.main.setBounds(0, 0, 9600, 6400);
+                this.cameras.main.startFollow(this.player);
+
+
+                //reglage des touches
                 this.cursors = this.input.keyboard.createCursorKeys();
                 this.keys = this.input.keyboard.addKeys({
                     a:  Phaser.Input.Keyboard.KeyCodes.A,
                     z:  Phaser.Input.Keyboard.KeyCodes.Z,
                     e:  Phaser.Input.Keyboard.KeyCodes.E,
                 });
+                this.doubleJump = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
 
-                this.argent = this.physics.add.sprite(65, 145, 'lenterneArgent').setScale(1.2).setDepth(2);
+
+
+
+                //reglage de l'UI, barre de vie et argent
+                this.argent = this.physics.add.sprite(880, 75, 'lenterneArgent').setScale(1.2).setDepth(2);
                 this.argent.setGravityY(-500);
                 this.argent.setScrollFactor(0);
 
-                this.scoreArgent=this.add.text(85,145,':'+this.afficheScore,{fontSize:'28px',fill:'#f00'});
+                this.scoreArgent=this.add.text(900,75,':'+this.afficheScore,{fontSize:'28px',fill:'#f00'});
                 this.scoreArgent.setScrollFactor(0);
 
                 this.barreVie = this.physics.add.sprite(150,50, 'barreVie').setScale(2).setDepth(2);
@@ -386,26 +547,26 @@
                     frameRate: 20
                 });
 
-                //this.baudrucheFont = this.physics.add.group({allowGravity:false});
+                //creation de l'arriere plan animée
                 this.baudrucheFont = this.physics.add.group();
 
-                this.invoqueBaudrucheBackground();
-                this.invoqueBaudrucheBackground();
-                this.invoqueBaudrucheBackground();
-                this.invoqueBaudrucheBackground();
-                this.invoqueBaudrucheBackground();
-                this.invoqueBaudrucheBackground();
-                this.invoqueBaudrucheBackground();
-                this.invoqueBaudrucheBackground();
-                this.invoqueBaudrucheBackground();
-                this.invoqueBaudrucheBackground();
+
+                for (this.pas = 0; this.pas <= 50; this.pas++) {
+                    this.invoqueBaudrucheBackground();
+                }
 
 
+
+
+
+
+
+                //creation du groube global des monstres
                 this.monstreGlobal = this.physics.add.group({allowGravity:false});
 
 
+                //creation des monstres main a partir de tiled
                 this.monstres1 = this.physics.add.group();
-
                 this.mapTest.getObjectLayer('monstre').objects.forEach((monstres1)=>{
                     this.monstre1 = this.monstres1.create( (monstres1.x)*2, (monstres1.y)*2-16, 'monstreMain').setScale(2);
                     this.monstre1.setPushable(false);
@@ -420,8 +581,6 @@
                     this.monstre1.setSize(50,100,50,3);
                     this.monstre1.setOffset(40,10);
                     this.monstre1.setVelocityX(200);
-                   
-
                     this.monstreGlobal.add(this.monstre1);
                 })
                 this.physics.add.collider(this.monstres1, this.obstacles, changeDirection, null, this);
@@ -448,24 +607,26 @@
                 });
 
 
+
+
+
+
+                //creation des monstres banshee a partir de tiled
                 this.banshees = this.physics.add.group({allowGravity:false});
                 this.mapTest.getObjectLayer('Banshee').objects.forEach((banshees)=>{
                     this.banshee = this.banshees.create( (banshees.x)*2, (banshees.y)*2-16, 'banshee').setScale(2);
                     this.banshee.setPushable(false);
                     this.banshee.type="banshee";
                     this.banshee.vie=30;
-                    this.banshee.valeur=50;
+                    this.banshee.valeur=30;
                     this.banshee.immo=0;
                     this.banshee.invulnerabilite=0;
                     this.banshee.attack=false;
                     this.banshee.cris=false;
                     this.banshee.coordXOrigine=this.banshee.x;
                     this.banshee.direction='left';
-                //    this.banshee.setSize(20,45,50,3);
-                this.banshee.setSize(45,20,50,3);
+                    this.banshee.setSize(45,20,50,3);
                     this.banshee.setOffset(40,55);
-                    //this.Banshee.setVelocityX(200);
-
                     this.monstreGlobal.add(this.banshee);
                 })
 
@@ -482,6 +643,13 @@
                 repeat: -1
                 });
 
+
+
+
+
+
+
+                //creation des monstres Baudruche a partir de tiled
                 this.baudruchePetitEnnemis = this.physics.add.group({allowGravity:false});
                 this.mapTest.getObjectLayer('baudrucheEnnemisPetit').objects.forEach((baudruchePetitEnnemis)=>{
                     this.baudruchePetitEnnemi = this.baudruchePetitEnnemis.create( (baudruchePetitEnnemis.x)*2, (baudruchePetitEnnemis.y)*2-16, 'baudruchePetitEnnemi');
@@ -492,7 +660,6 @@
                     this.baudruchePetitEnnemi.immo=0;
                     this.baudruchePetitEnnemi.invulnerabilite=0;
                     this.baudruchePetitEnnemi.attack=false;
-
                     this.baudruchePetitEnnemi.target=false;
                     this.monstreGlobal.add(this.baudruchePetitEnnemi);
                 })
@@ -519,19 +686,22 @@
 
 
 
+
+
+
+
+                //animation pour la baudruche invocable du joueur
                 this.anims.create({
                 key: 'attackBaudrucheExploJoueur',
                 frames: this.anims.generateFrameNumbers('baudrucheJoueur', {start:15,end:29}),
                 frameRate: 20,
                 });
-
                 this.anims.create({
                 key: 'mouvBaudruchePetitEnnemiJoueur',
                 frames: this.anims.generateFrameNumbers('baudrucheJoueur', {start:0,end:4}),
                 frameRate: 10,
                 repeat: -1
                 });
-
                 this.anims.create({
                 key: 'idleBaudruchePetitEnnemiJoueur',
                 frames: this.anims.generateFrameNumbers('baudrucheJoueur', {start:5,end:9}),
@@ -541,12 +711,15 @@
 
 
 
+
+
+                //creation du boss cupidon a partir de tiled
                 this.cupidonBoss = this.physics.add.group({allowGravity:false});
                 this.mapTest.getObjectLayer('boss').objects.forEach((cupidonBoss)=>{
                     this.cupidon = this.cupidonBoss.create( (cupidonBoss.x)*2, (cupidonBoss.y)*2-16, 'cupidon').setScale(3);
                     this.cupidon.setPushable(false);
                     this.cupidon.type="cupidon";
-                    this.cupidon.vie=100;
+                    this.cupidon.vie=10;
                     this.cupidon.valeur=20;
                     this.cupidon.immo=0;
                     this.cupidon.aura=false;
@@ -586,7 +759,6 @@
                 frameRate: 10,
                 });
 
-
                 this.auraCupidonBoss = this.physics.add.group({allowGravity:false});
                 this.physics.add.overlap(this.auraCupidonBoss, this.player, degatPlayer, null, this);
                 this.anims.create({
@@ -596,12 +768,16 @@
                 repeat: -1
                 });
 
-
                 this.arrows = this.physics.add.group({allowGravity:false});
                 //this.arrows = this.physics.add.group();
                 this.physics.add.overlap(this.arrows, this.player, degatPlayer, null, this);
 
 
+
+
+
+
+                //creation de decors a partir de tiled
                 this.baudrucheSol = this.physics.add.group({allowGravity:false});
 
                 this.mapTest.getObjectLayer('baudrucheSol').objects.forEach((baudrucheSol)=>{
@@ -609,86 +785,107 @@
                 this.baudrucheSol1.anims.play('battementBaudrucheSol', true);
                 })
 
-                this.murSpeciaux1 = this.physics.add.staticGroup();
-                this.physics.add.collider(this.murSpeciaux1, this.player);
-
-                this.mapTest.getObjectLayer('murSpeciaux1').objects.forEach((murSpeciaux1)=>{
-                    this.murSpecial = this.murSpeciaux1.create( (murSpeciaux1.x)*2+32, (murSpeciaux1.y)*2-32, 'murSpecial').setScale(2);
-                    //this.murSpecial.setPushable(false);
-                })
-
-                this.murSpeciaux2 = this.physics.add.staticGroup();
-                this.physics.add.collider(this.murSpeciaux2, this.player);
-
-                this.mapTest.getObjectLayer('murSpeciaux2').objects.forEach((murSpeciaux2)=>{
-                    this.murSpecial = this.murSpeciaux2.create( (murSpeciaux2.x)*2+32, (murSpeciaux2.y)*2-32, 'murSpecial').setScale(2);
-                    //this.murSpecial.setPushable(false);
-                })
-
-                this.murSpeciaux3 = this.physics.add.staticGroup();
-                this.physics.add.collider(this.murSpeciaux3, this.player);
-
-                this.mapTest.getObjectLayer('murSpeciaux3').objects.forEach((murSpeciaux3)=>{
-                    this.murSpecial = this.murSpeciaux3.create( (murSpeciaux3.x)*2+32, (murSpeciaux3.y)*2-32, 'murSpecial').setScale(2);
-                    //this.murSpecial.setPushable(false);
-                })
-
-
-                this.leviers1 = this.physics.add.staticGroup();
-                this.physics.add.overlap(this.player, this.leviers1, activeLevier1, null, this);
-
-                this.mapTest.getObjectLayer('levier1').objects.forEach((leviers1)=>{
-                    this.levier = this.leviers1.create( (leviers1.x)*2+32, (leviers1.y)*2-32, 'levier').setScale(2);
-                    //this.murSpecial.setPushable(false);
-                })
-
-                this.leviers2 = this.physics.add.staticGroup();
-                this.physics.add.overlap(this.player, this.leviers2, activeLevier2, null, this);
-
-                this.mapTest.getObjectLayer('levier2').objects.forEach((leviers2)=>{
-                    this.levier = this.leviers2.create( (leviers2.x)*2+32, (leviers2.y)*2-32, 'levier').setScale(2);
-                    //this.murSpecial.setPushable(false);
-                })
-
-                this.leviers3 = this.physics.add.staticGroup();
-                this.physics.add.overlap(this.player, this.leviers3, activeLevier3, null, this);
-
-                this.mapTest.getObjectLayer('levier3').objects.forEach((leviers3)=>{
-                    this.levier = this.leviers3.create( (leviers3.x)*2+32, (leviers3.y)*2-32, 'levier').setScale(2);
-                    //this.murSpecial.setPushable(false);
-                })
 
 
 
 
 
                 this.anims.create({
+                key: 'grandePlanteAni',
+                frames: this.anims.generateFrameNumbers('grandePlante', {start:0,end:12}),
+                frameRate: 10,
+                repeat: -1
+                });
+                this.grandePlantes = this.physics.add.group({allowGravity:false});
+
+                this.mapTest.getObjectLayer('planteGrandeAnime').objects.forEach((grandePlantes)=>{
+                this.grandePlantes1 = this.grandePlantes.create(grandePlantes.x*2,grandePlantes.y*2, 'grandePlante').setScale(2).setDepth(5);
+                this.grandePlantes1.anims.play('grandePlanteAni', true);
+                })
+
+
+
+
+
+
+  
+                this.anims.create({
+                key: 'planteAni',
+                frames: this.anims.generateFrameNumbers('plante', {start:0,end:13}),
+                frameRate: 10,
+                repeat: -1
+                });
+                this.plantes = this.physics.add.group({allowGravity:false});
+
+                this.mapTest.getObjectLayer('planteAnimee').objects.forEach((plantes)=>{
+                this.plantes1 = this.plantes.create(plantes.x*2,plantes.y*2, 'plante').setScale(2).setDepth(5);
+                this.plantes1.anims.play('planteAni', true);
+                })
+
+
+
+
+
+                //creation des differentes interaction entre objet a partir de tiled
+                this.murSpeciaux1 = this.physics.add.staticGroup();
+                this.physics.add.collider(this.murSpeciaux1, this.player);
+                this.mapTest.getObjectLayer('murSpeciaux1').objects.forEach((murSpeciaux1)=>{
+                    this.murSpecial = this.murSpeciaux1.create( (murSpeciaux1.x)*2+32, (murSpeciaux1.y)*2-32, 'murSpecial').setScale(2);
+                })
+                this.murSpeciaux2 = this.physics.add.staticGroup();
+                this.physics.add.collider(this.murSpeciaux2, this.player);
+                this.mapTest.getObjectLayer('murSpeciaux2').objects.forEach((murSpeciaux2)=>{
+                    this.murSpecial = this.murSpeciaux2.create( (murSpeciaux2.x)*2+32, (murSpeciaux2.y)*2-32, 'murSpecial').setScale(2);
+                })
+                this.murSpeciaux3 = this.physics.add.staticGroup();
+                this.physics.add.collider(this.murSpeciaux3, this.player);
+                this.mapTest.getObjectLayer('murSpeciaux3').objects.forEach((murSpeciaux3)=>{
+                    this.murSpecial = this.murSpeciaux3.create( (murSpeciaux3.x)*2+32, (murSpeciaux3.y)*2-32, 'murSpecial').setScale(2);
+                })
+                this.murSpeciaux5 = this.physics.add.staticGroup();
+                this.physics.add.collider(this.murSpeciaux5, this.player);
+                this.mapTest.getObjectLayer('murSpeciaux5').objects.forEach((murSpeciaux5)=>{
+                    this.murSpecial = this.murSpeciaux5.create( (murSpeciaux5.x)*2+32, (murSpeciaux5.y)*2-32, 'murSpecial').setScale(2);
+                })
+                this.leviers1 = this.physics.add.staticGroup();
+                this.physics.add.overlap(this.player, this.leviers1, activeLevier1, null, this);
+                this.mapTest.getObjectLayer('levier1').objects.forEach((leviers1)=>{
+                    this.levier = this.leviers1.create( (leviers1.x)*2+32, (leviers1.y)*2-32, 'levier').setScale(2);
+                })
+                this.leviers2 = this.physics.add.staticGroup();
+                this.physics.add.overlap(this.player, this.leviers2, activeLevier2, null, this);
+                this.mapTest.getObjectLayer('levier2').objects.forEach((leviers2)=>{
+                    this.levier = this.leviers2.create( (leviers2.x)*2+32, (leviers2.y)*2-32, 'levier').setScale(2);
+                })
+                this.leviers3 = this.physics.add.staticGroup();
+                this.physics.add.overlap(this.player, this.leviers3, activeLevier3, null, this);
+                this.mapTest.getObjectLayer('levier3').objects.forEach((leviers3)=>{
+                    this.levier = this.leviers3.create( (leviers3.x)*2+32, (leviers3.y)*2-32, 'levier').setScale(2);
+                })
+
+
+
+
+
+                //creation des ame qui s'envole a partir de tiled
+                this.anims.create({
                 key: 'fantomeApp',
                 frames: this.anims.generateFrameNumbers('fantome', {start:0,end:15}),
                 frameRate: 20,
                 });
-                
                 this.fantomes = this.physics.add.group({allowGravity:false});
                 this.physics.add.overlap(this.fantomes, this.argent, shine, null, this);
-                /*
-                this.mapTest.getObjectLayer('fantomeSol').objects.forEach((fantomes)=>{
-                this.fantome = this.fantomes.create(fantomes.x*2,fantomes.y*2-55, 'fantome').setScale(2).setDepth(1);
-                this.fantome.anims.play('fantomeApp', true);
-                })*/
                 
 
+
+                //propriete des monstres
                 this.physics.add.overlap(this.player, this.monstres1, degatPlayer, null, this);
                 this.physics.add.overlap(this.player, this.banshees, degatPlayer, null, this);
                 this.physics.add.collider(this.monstreGlobal, this.obstacles);
-                //this.physics.add.collider(this.monstres1, this.obstacles);
-                //this.physics.add.collider(this.Banshees, this.obstacles);
-                //this.physics.add.collider(this.sentinelles, this.obstacles,changeOrSenti, null,this);
 
-                //this.scoreText=this.add.text(16,16,'score: 0',{fontSize:'32px',fill:'#000'});
-                //affiche un texte à l’écran, pour le score
 
-                this.doubleJump = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
 
+                //Animation des attaques spéciales
                 this.attackPersoFaux = this.physics.add.group();
                 this.anims.create({
                 key: 'fauxMouv',
@@ -696,14 +893,11 @@
                 frameRate: 30,
                 repeat: -1
                 });
-
-
                 this.anims.create({
                 key: 'crisAmeBansheePerso',
                 frames: this.anims.generateFrameNumbers('perso', {start:126,end:140}),
                 frameRate: 20,
                 });
-
                 this.anims.create({
                 key: 'crisAmeBanshee',
                 frames: this.anims.generateFrameNumbers('compAmeBanshee', {start:0,end:14}),
@@ -713,7 +907,14 @@
 
                 this.baudrucheJoueurs = this.physics.add.group({allowGravity:false});
 
-
+                
+                
+                
+                
+                
+                
+                
+                //Affichage du pouvoir actuel dependant du monstre tue
                 this.dropsSouls = this.physics.add.group();
                 this.physics.add.overlap(this.dropsSouls, this.player, recupDrops, null, this);
                 this.physics.add.collider(this.dropsSouls, this.obstacles);
@@ -726,18 +927,133 @@
                 this.ameRecup.setScrollFactor(0)
 
 
-            this.musiqueAmbiance = this.sound.add('ambience', { loop: true });
-            this.battementBaudruche = this.sound.add('battementBaudruche', { loop: true });
-            this.ameMain = this.sound.add('AmeMain');
-            this.attackFauxPerso = this.sound.add('attackPerso');
-            this.criBanshee = this.sound.add('criBanshee');
-    
-            this.musiqueAmbiance.play();
+
+
+
+
+                //son
+                this.musiqueAmbiance = this.sound.add('ambience', { loop: true });
+                this.battementBaudruche = this.sound.add('battementBaudruche', { loop: true });
+                this.ameMain = this.sound.add('AmeMain');
+                this.attackFauxPerso = this.sound.add('attackPerso');
+                this.criBanshee = this.sound.add('criBanshee');
+                this.cupidonCoeur = this.sound.add('entreeCupidon');
+                this.MainHit = this.sound.add('douleurMain');
+                this.cupidonBow = this.sound.add('attackCupidon');
+        
+                this.musiqueAmbiance.play();
+
+
+                this.particles1 = this.add.particles('particuleBlack').setDepth(-1);
+
+                this.emitter1 = this.particles1.createEmitter({
+                    x: this.player.x,
+                    y: this.player.y,
+                    scale: { start: 1, end: 0 },
+                    alpha: { start: .5, end: 0 },
+                    
+                    //blendMode: 'SCREEN',
+                    quantity: 1,
+                    frequency: 0.1,
+                    speed: { min: 0, max: 50 },
+                    angle: { min: 0, max: 360 },
+                    gravityY: -50,
+                    
+                    
+                    lifespan: 1350,
+                
+                });
+
 
         }
         update(){
 
-            //barre de vie
+            this.monstres1.children.iterate(function (child) {
+                if (child.x<1000){
+                    child.disableBody(true,true);
+                //child.destroy();
+                }
+            },this);
+
+        //animation de début
+        if (this.dialogue!=true && this.animation==true && Phaser.Math.Distance.BetweenPoints(this.player, this.pnj)>=150){
+            this.pnj.setVelocityX(-150);
+            this.pnj.anims.play('left', true);
+        }
+        if (Phaser.Math.Distance.BetweenPoints(this.player, this.pnj)<=150 && this.animation==true && this.dialogue!=true && this.dialogueEnCours!=true){
+            this.pnj.setVelocityX(0);
+            this.player.anims.play('right', true);
+
+
+            this.texteDialogue = this.physics.add.sprite(550,400, 'dialogue1').setScale(2);
+            this.texteDialogue.setGravityY(-500);
+            this.texteDialogue.setScrollFactor(0);
+            this.texteDialogue.nbAnims=1;
+            this.texteDialogue.anims.play('dialogue1Animation1',true);
+            this.dialogueEnCours=true;
+        }
+
+        if(this.dialogueEnCours==true){
+            if (this.texteDialogue.anims.currentFrame.index==7 && this.cursors.space.isDown && this.texteDialogue.nbAnims==1){
+                this.texteDialogue.anims.play('dialogue2Animation1',true);
+                this.texteDialogue.nbAnims=2;
+            }
+
+            if (this.texteDialogue.anims.currentFrame.index==5 && this.cursors.space.isDown && this.texteDialogue.nbAnims==2){
+                this.texteDialogue.anims.play('dialogue3Animation1',true);
+                this.texteDialogue.nbAnims=3;
+            } 
+
+            if (this.texteDialogue.anims.currentFrame.index>=5 && this.cursors.space.isDown && this.texteDialogue.nbAnims==3){
+                this.texteDialogue.destroy();
+                this.dialogue=true;
+                this.dialogueEnCours=false;
+            }
+        }
+
+        if (Phaser.Math.Distance.BetweenPoints(this.player, this.pnj)<=400 && this.animation==true && this.dialogue==true){
+            this.pnj.setVelocityX(150);
+            this.pnj.anims.play('right', true);
+        }
+        if (Phaser.Math.Distance.BetweenPoints(this.player, this.pnj)>=400 && this.animation==true && this.dialogue==true){
+            this.pnj.destroy();
+            this.animation=false;
+
+
+
+            this.texteTouches = this.physics.add.group({allowGravity:false});
+            this.texteTouche = this.texteTouches.create(500, 250, 'texteTouche').setScale(2);
+            this.texteTouche.setScrollFactor(0);
+            this.texteToucheEnCours=true;
+
+        }
+
+        if (this.texteToucheEnCours==true && this.cursors.space.isDown)
+        {
+            this.texteTouche.destroy();
+            this.texteToucheEnCours=false;
+        }
+
+
+        if (this.texteFinEnCours==true && this.cursors.space.isDown)
+        {
+            this.texteFin.destroy();
+            this.texteFinEnCours=false;
+        }
+
+
+
+
+
+        if (this.ameMonstre=="cupidon" && this.player.x>=6000 && this.player.y<=800){
+            this.scene.start('EcranFin',{});
+        }
+
+        this.emitter1.x.propertyValue=this.player.x;
+        this.emitter1.y.propertyValue=this.player.y;
+
+
+        //actualisation barre de vie
         if (this.player.vie==6){
             this.barreVie.anims.play('barreVie6', true); //et animation => gauche
         }
@@ -761,32 +1077,40 @@
         }
 
 
+
+
+
+
+
+
+        //actualisation du portrait du pouvoir actuel
         if (this.change==true){
             this.ameRecup.disableBody(true,true);
             if (this.ameMonstre=="main"){
-            this.ameRecup = this.ameActuelle.create(150,110, 'portraitMain').setScale(1.25).setDepth(3);
+            this.ameRecup = this.ameActuelle.create(300,50, 'portraitMain').setScale(1.25).setDepth(3);
             this.ameRecup.setScrollFactor(0)
             this.change=false;
             }
             if (this.ameMonstre=="banshee"){
-                this.ameRecup = this.ameActuelle.create(150,110, 'portraitBanshee').setScale(1.25).setDepth(2).setScrollFactor(0);
+                this.ameRecup = this.ameActuelle.create(300,50, 'portraitBanshee').setScale(1.25).setDepth(2).setScrollFactor(0);
                 this.change=false;
             }
             if (this.ameMonstre=="baudruche"){
-                this.ameRecup = this.ameActuelle.create(150,110, 'portraitBaudruche').setScale(0.75).setDepth(3);
+                this.ameRecup = this.ameActuelle.create(300,50, 'portraitBaudruche').setScale(0.75).setDepth(3);
+                this.change=false;
+                this.ameRecup.setScrollFactor(0)
+            }
+            if (this.ameMonstre=="cupidon"){
+                this.ameRecup = this.ameActuelle.create(300,50, 'portraitCupidon').setScale(2).setDepth(3);
                 this.change=false;
                 this.ameRecup.setScrollFactor(0)
             }
         }
         
 
-        /*this.ameActuelle.children.iterate(function (child) {
-            console.log(child.x);
-            console.log(child.y);
-            this.physics.moveToObject(this.ameRecup, this.barreVie, 300);
-        });*/
 
 
+        //comportement des fantomes
         this.fantomes.children.iterate(function (child) {
             if(child.anims.currentFrame.index==16 && child.time==0 && child.joueur!=true){
                 child.setScale(1);
@@ -802,6 +1126,10 @@
         },this);
 
 
+
+
+
+        //comportement pour ts les ennemis
         this.monstreGlobal.children.iterate(function (child) {     
                 if (child.invulnerabilite!=0){
                     child.invulnerabilite=child.invulnerabilite-1;
@@ -815,284 +1143,293 @@
                     child.setTint(0xffffff);
                 }
         },this);
+
+
+
             
-            this.baudrucheFont.children.iterate(function (child) {
-                
-                if (child.y<=0){
-                    this.coordX=Math.floor(Math.random() * 1900);
-                    this.coordY=Math.floor(Math.random() * 2100);
-                    this.taille=Math.floor(Math.random() * 5);
-                    this.vitesse=Math.floor(Math.random() * 400);
-                    this.vitesse=-(this.vitesse);
-                    child.x=this.coordX;
-                    child.y=2200;
-                    child.setScale(this.taille);
-                    child.setVelocity(0,this.vitesse);
-               }
-            },this);
-
-            this.sleep = (milliseconds) => {
-                        return new Promise(resolve => setTimeout(resolve, milliseconds));
+        this.baudrucheFont.children.iterate(function (child) {
+            if (child.y<=0){
+                this.coordX=Math.floor(Math.random() * 1900);
+                this.coordY=Math.floor(Math.random() * 2100);
+                this.taille=Math.floor(Math.random() * 5);
+                this.vitesse=Math.floor(Math.random() * 400);
+                this.vitesse=-(this.vitesse);
+                child.x=this.coordX;
+                child.y=2200;
+                child.setScale(this.taille);
+                child.setVelocity(0,this.vitesse);
             }
+        },this);
+
+        this.sleep = (milliseconds) => {
+            return new Promise(resolve => setTimeout(resolve, milliseconds));
+        }
 
 
-            /*this.cupidonBoss.children.iterate(function (child) {
-                this.actionBoss=Math.floor(Math.random() * 100);
-
-                if (child.direction=="right" && child.lanceAura!=true && child.tir!=true && child.descend!=true){
-                    child.setVelocityX(300);
-                    child.anims.play('cupidonIdle', true);
-                }
-                if (child.direction=="left" && child.lanceAura!=true && child.tir!=true && child.descend!=true){
-                    child.setVelocityX(-300);
-                    child.anims.play('cupidonIdle', true);
-                }
 
 
-                if (child.aura==true){
-                    this.auraCupidon.x=child.x;
-                    this.auraCupidon.y=child.y;
-                }
+            //comportement boss cupidon
+            this.cupidonBoss.children.iterate(function (child) {
+                if (this.player.x>2000 && this.player.y>5500){
+                    this.actionBoss=Math.floor(Math.random() * 100);
+
+                    if (child.direction=="right" && child.lanceAura!=true && child.tir!=true && child.descend!=true){
+                        child.setVelocityX(300);
+                        child.anims.play('cupidonIdle', true);
+                    }
+                    if (child.direction=="left" && child.lanceAura!=true && child.tir!=true && child.descend!=true){
+                        child.setVelocityX(-300);
+                        child.anims.play('cupidonIdle', true);
+                    }
+                    if (child.aura==true){
+                        this.auraCupidon.x=child.x;
+                        this.auraCupidon.y=child.y;
+                    }
+                    if (this.actionBoss<=30 && child.tir!=true && child.aura!=true && child.lanceAura!=true && child.descend!=true){
+                        this.actionBossChoix=Math.floor(Math.random() * 100);
+                    }
 
 
-                if (this.actionBoss<1 && child.tir!=true && child.aura!=true && child.lanceAura!=true && child.tir!=true && child.descend!=true){
-                    this.actionBossChoix=Math.floor(Math.random() * 100);
-                    console.log(this.actionBossChoix);
-                }
 
-                if (this.actionBossChoix>=40 && this.actionBossChoix <60 && child.aura!=true && child.lanceAura!=true && child.tir!=true && child.descend!=true){
-                    for (let i = 0; i < 3; i++) {
-                        child.setVelocityY(500);
+
+
+
+                    if (this.actionBossChoix<20 && child.aura!=true && child.lanceAura!=true && child.tir!=true && child.descend!=true){
+                        child.anims.play('lancementAurasCupidon', true);
+                        child.lanceAura=true;
+                        child.setVelocity(0,0);
+                        this.cupidonCoeur.play();
+                    }
+
+
+
+                    if (child.lanceAura==true && child.anims.currentFrame.index==14 && child.aura!=true && child.tir!=true && child.descend!=true){
+                        child.anims.play('cupidonIdle', true);
+                        this.auraCupidon = this.auraCupidonBoss.create((child.x), (child.y), 'cupidonAuras').setScale(3);
+                        this.auraCupidon.anims.play('auraActive', true);
+                        child.aura=true;
+                        child.lanceAura=false;
+                        this.sleep(3000).then(() => {
+                            child.aura=false;
+                            this.auraCupidon.destroy();
+                        })
+                    }
+
+
+
+                    if (this.actionBossChoix>=20 && this.actionBossChoix<40 && child.aura!=true && child.lanceAura!=true && child.tir!=true && child.descend!=true){
+                        child.setVelocity(0,0);
                         child.anims.play('cupidonAttackRight', true);
                         child.tir=true;
                         this.arrow = this.arrows.create(child.x, child.y, 'arrowsRightCupidon').setScale(3);
                         this.arrow.setVelocityX(300);
+                        this.cupidonBow.play();
                     }
-                    child.setVelocityY(-100);
-                    child.descend=true;
-                }
-
-                if (this.actionBossChoix>=20 && this.actionBossChoix<40 && child.aura!=true && child.lanceAura!=true && child.tir!=true && child.descend!=true){
-                    child.setVelocity(0,0);
-                    child.anims.play('cupidonAttackRight', true);
-                    child.tir=true;
-                    this.arrow = this.arrows.create(child.x, child.y, 'arrowsRightCupidon').setScale(3);
-                    //this.arrow.anims.play('arrowsRight', true);
-                    this.arrow.setVelocityX(300);
-                }
-
-                if (child.tir==true){
-                    if(child.anims.currentFrame.index==8){
-                        child.tir=false;
+                    if (child.tir==true){
+                        if(child.anims.currentFrame.index==8){
+                            child.tir=false;
+                        }
                     }
-                }
 
 
-                if (this.actionBossChoix<20 && child.aura!=true && child.lanceAura!=true && child.tir!=true && child.descend!=true){
-                    child.anims.play('lancementAurasCupidon', true);
-                    child.lanceAura=true;
-                    child.setVelocity(0,0);
+
+                    /*if (this.actionBossChoix>=40 && this.actionBossChoix <60 && child.aura!=true && child.lanceAura!=true && child.tir!=true && child.descend!=true){
+                        for (let i = 0; i < 3; i++) {
+                            child.setVelocityY(500);
+                            child.anims.play('cupidonAttackRight', true);
+                            child.tir=true;
+                            this.arrow = this.arrows.create(child.x, child.y, 'arrowsRightCupidon').setScale(3);
+                            this.arrow.setVelocityX(300);
+                        }
+                        child.setVelocityY(-100);
+                        child.descend=true;
+                    }*/
                 }
-                if (child.lanceAura==true && child.anims.currentFrame.index==14 && child.aura!=true && child.tir!=true && child.descend!=true){
-                    child.anims.play('cupidonIdle', true);
-                    this.auraCupidon = this.auraCupidonBoss.create((child.x), (child.y), 'cupidonAuras').setScale(3);
-                    this.auraCupidon.anims.play('auraActive', true);
-                    child.aura=true;
-                    child.lanceAura=false;
-                    this.sleep(3000).then(() => {
-                        child.aura=false;
-                        this.auraCupidon.destroy();
-                    })
-                }
-               
             },this);
-*/
 
 
-            this.baudruchePetitEnnemis.children.iterate(function (child) {
+
+
+
+
+
+
+        //comportement des ennemis baudruche
+        this.baudruchePetitEnnemis.children.iterate(function (child) {
                 //child.setVelocityX(-300);
-                if (child.attack==false && child.target==false){
-                    child.anims.play('idleBaudruchePetitEnnemi', true);
+            if (child.attack==false && child.target==false){
+                child.anims.play('idleBaudruchePetitEnnemi', true);
+            }
+            if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=500 && child.attack!=true){
+                this.battementBaudruche.play();
+            }
+
+            if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=300 && child.attack!=true){
+                child.anims.play('mouvBaudruchePetitEnnemi', true);
+                child.target=true;
+                this.physics.moveToObject(child, this.player, 300);
+                if(child.immo!=0){
+                    child.setVelocity(0,0);
                 }
-                if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=500 && child.attack!=true){
-                    this.battementBaudruche.play();
+                    //this.baudruchePetitEnnemi.rotation=90;
+            }
+                
+
+            if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=75 && child.target==true){
+                child.anims.play('attackBaudrucheExplo', true);
+                child.attack=true;
+                child.setVelocity(0,0);
+                child.setScale(3);
+            }
+
+            if (child.anims.currentFrame.index>=8 && child.attack==true){
+                this.physics.add.overlap(this.player, child, degatPlayer, null, this);
+            }
+
+            if (child.anims.currentFrame.index==15 && child.attack==true){
+                child.x=-200;
+                child.y=-200;
+                child.disableBody(true,true);
+                this.battementBaudruche.stop();
+            }
+        },this);
+
+
+        //comportmeent des ennemis banshee
+        this.banshees.children.iterate(function (child) {
+            if (child.immo==0){
+                if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=250){
+                    child.target=true;
+                }else{
+                    child.target=false;
+                }
+                if (this.player.x>child.x){       
+                    child.rotation=90;
+                    child.direction="right";
+                }
+                if (this.player.x<child.x){
+                    child.rotation=-90;
+                    child.direction="left";
                 }
 
-                if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=300 && child.attack!=true){
-                    child.anims.play('mouvBaudruchePetitEnnemi', true);
-                    child.target=true;
-                    this.physics.moveToObject(child, this.player, 300);
-                    if(child.immo!=0){
+                if (child.attack==false){
+                    if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=500 && child.target==false){
+                        if (this.player.x>child.x){
+                            child.setVelocityX(100);
+                        }
+                        if (this.player.x<child.x){
+                            child.setVelocityX(-100);
+                        }
+                        if (this.player.y>child.y){
+                            child.setVelocityY(100);
+                        }
+                        if (this.player.y<child.y){
+                             child.setVelocityY(-100);
+                        }
+                        child.anims.play('mouvBanshee', true);
+                    }else{ 
                         child.setVelocity(0,0);
                     }
-                    //this.baudruchePetitEnnemi.rotation=90;
-                }
-                
-
-                if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=75 && child.target==true){
-                    child.anims.play('attackBaudrucheExplo', true);
-                    child.attack=true;
-                    child.setVelocity(0,0);
-                    child.setScale(3);
                 }
 
-                if (child.anims.currentFrame.index>=8 && child.attack==true){
-                    this.physics.add.overlap(this.player, child, degatPlayer, null, this);
+                if (child.target==true && Math.floor(Math.random() * 100<=1) && child.attack==false){
+                    this.choixAttack=Math.floor(Math.random() * 100);
+                    if(this.choixAttack>50){
+                        child.setVelocity(0,0);
+                        child.anims.play('attackCryBanshee', true);
+                        child.attack=true;
+                        child.cris=true;
+                        this.criBanshee.play();
                     }
 
-                if (child.anims.currentFrame.index==15 && child.attack==true){
-                        //child.attack=false;
-                        //child.destroy();
-                        child.disableBody(true,true);
-                        this.battementBaudruche.stop();
-                    }
-            },this);
+                    if (child.cris==true && this.premiereHitBoxBanshee==false){
+                        this.attackCrisBanshee = this.physics.add.group();
+                        this.attackCrisBanshee = this.physics.add.sprite(child.x,child.y, 'hitBoxPersoAttack');
+                        this.attackCrisBanshee.setGravity(0,-500);
+                        this.premiereHitBoxBanshee=true;
 
-
-
-            this.banshees.children.iterate(function (child) {
-                if (child.immo==0){
-
-               
-                    if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=250){
-                        child.target=true;
-                    }else{
-                        child.target=false;
-                    }
-                    if (this.player.x>child.x){       
-                        child.rotation=90;
-                        child.direction="right";
-                    }
-                    if (this.player.x<child.x){
-                        child.rotation=-90;
-                        //child.setRotationOffset(90);
-                        child.direction="left";
+                        if (child.direction=="right"){
+                            this.attackCrisBanshee.setSize(100,150,100,50);
+                            this.attackCrisBanshee.setOffset(50,0);
+                        }
+                        if (child.direction=="left"){
+                            this.attackCrisBanshee.setSize(100,150,100,50);
+                            this.attackCrisBanshee.setOffset(-30,0);    
+                        }
                     }
 
-                    if (child.attack==false){
-                        if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=500 && child.target==false){
-                            if (this.player.x>child.x){
-                                child.setVelocityX(100);
-                            }
-                            if (this.player.x<child.x){
-                                child.setVelocityX(-100);
-                            }
-                            if (this.player.y>child.y){
-                                child.setVelocityY(100);
-                            }
-                            if (this.player.y<child.y){
-                                child.setVelocityY(-100);
-                            }
+                    if(this.choixAttack<=50){
+                        if (this.player.x>child.x){ 
+                            child.setVelocityX(400);
                             child.anims.play('mouvBanshee', true);
-                        }else{ 
-                            child.setVelocity(0,0);
                         }
-                    }
-
-                    if (child.target==true && Math.floor(Math.random() * 100<=1) && child.attack==false){
-                        this.choixAttack=Math.floor(Math.random() * 100);
-
-
-                        if(this.choixAttack>50){
-                            child.setVelocity(0,0);
-                            child.anims.play('attackCryBanshee', true);
-                            child.attack=true;
-                            child.cris=true;
-                            this.criBanshee.play();
+                        if (this.player.x<child.x){
+                            child.setVelocityX(-400);
+                            child.anims.play('mouvBanshee', true);
                         }
-
-
-                        if (child.cris==true && this.premiereHitBoxBanshee==false){
-                            this.attackCrisBanshee = this.physics.add.group();
-                            this.attackCrisBanshee = this.physics.add.sprite(child.x,child.y, 'hitBoxPersoAttack');
-                            this.attackCrisBanshee.setGravity(0,-500);
-                            this.premiereHitBoxBanshee=true;
-
-                            if (child.direction=="right"){
-                                this.attackCrisBanshee.setSize(100,150,100,50);
-                                this.attackCrisBanshee.setOffset(50,0);
-                            }
-                            if (child.direction=="left"){
-                                this.attackCrisBanshee.setSize(100,150,100,50);
-                                this.attackCrisBanshee.setOffset(-30,0);    
-                            }
-                        }
-
-                        if(this.choixAttack<=50){
-                            if (this.player.x>child.x){ 
-                                child.setVelocityX(400);
-                                child.anims.play('mouvBanshee', true);
-                            }
-                            if (this.player.x<child.x){
-                                child.setVelocityX(-400);
-                                child.anims.play('mouvBanshee', true);
-                            }
-                            child.attack=true;
-                            this.sleep(1000).then(() => {
-                                child.attack=false;
-                            })
-                        }
-
-                    }
-
-                    if (child.cris==true){
-                        if(child.anims.currentFrame.index>=13 && child.anims.currentFrame.index<=17){
-                            this.physics.add.overlap(this.attackCrisBanshee, this.player, immoPlayer, null, this);
-                        }
-                        if(child.anims.currentFrame.index==20){
+                        child.attack=true;
+                        this.sleep(1000).then(() => {
                             child.attack=false;
-                            child.cris=false;
-                            this.premiereHitBoxBanshee=false;
-                            this.attackCrisBanshee.destroy();
-                        } 
+                        })
                     }
+
+                }
+
+                if (child.cris==true){
+                    if(child.anims.currentFrame.index>=13 && child.anims.currentFrame.index<=17){
+                        this.physics.add.overlap(this.attackCrisBanshee, this.player, immoPlayer, null, this);
+                    }
+                    if(child.anims.currentFrame.index==20){
+                        child.attack=false;
+                        child.cris=false;
+                        this.premiereHitBoxBanshee=false;
+                        this.attackCrisBanshee.destroy();
+                    } 
+                }
+            }
+        },this);
+             
+        
+
+
+    //comportement baudruche invovable
+        if (this.baudrucheJoueurEnVie==true){
+            if (this.baudrucheJoueur.attack==false && this.baudrucheJoueur.target==false){
+                this.baudrucheJoueur.anims.play('idleBaudruchePetitEnnemiJoueur', true);
+                this.baudrucheJoueur.x=this.player.x-100;
+                this.baudrucheJoueur.y=this.player.y-30;
             }
 
+            this.monstreGlobal.children.iterate(function (child) {     
+                if(Phaser.Math.Distance.BetweenPoints(this.baudrucheJoueur, child)<this.plusPetiteDistance){
+                    this.cible=child;
+                    this.baudrucheJoueur.target=true;
+                }
             },this);
-                    
 
-            if (this.baudrucheJoueurEnVie==true){
-                if (this.baudrucheJoueur.attack==false && this.baudrucheJoueur.target==false){
-                    this.baudrucheJoueur.anims.play('idleBaudruchePetitEnnemiJoueur', true);
-                    this.baudrucheJoueur.x=this.player.x-100;
-                    this.baudrucheJoueur.y=this.player.y-30;
-                }
-
-                this.monstreGlobal.children.iterate(function (child) {     
-                    if(Phaser.Math.Distance.BetweenPoints(this.baudrucheJoueur, child)<this.plusPetiteDistance){
-                        this.cible=child;
-                        this.baudrucheJoueur.target=true;
-                    }
-
-                },this);
-
-                if(this.baudrucheJoueur.target==true && this.baudrucheJoueur.attack!=true){
-                    this.baudrucheJoueur.anims.play('mouvBaudruchePetitEnnemiJoueur', true);
-                    this.physics.moveToObject(this.baudrucheJoueur, this.cible, 400);
-                }
-
-                if(this.baudrucheJoueur.target==true){
-                    if (Phaser.Math.Distance.BetweenPoints(this.baudrucheJoueur, this.cible)<=75){
-                        this.baudrucheJoueur.anims.play('attackBaudrucheExploJoueur', true);
-                        this.baudrucheJoueur.attack=true;
-                        this.baudrucheJoueur.setVelocity(0,0);
-                        this.baudrucheJoueur.setScale(3);
-                    }
-                }
-
-                if (this.baudrucheJoueur.anims.currentFrame.index>=8 && this.baudrucheJoueur.attack==true){
-                    this.physics.add.overlap(this.baudrucheJoueur, this.cible, degatMonstre, null, this);
-                }
-
-                if (this.baudrucheJoueur.anims.currentFrame.index==15 && this.baudrucheJoueur.attack==true){
-                        //child.attack=false;
-                        this.baudrucheJoueur.destroy();
-                        //this.baudrucheJoueur.disableBody(true,true);
-                        this.baudrucheJoueurEnVie=false;
-                }
-                
+            if(this.baudrucheJoueur.target==true && this.baudrucheJoueur.attack!=true){
+                this.baudrucheJoueur.anims.play('mouvBaudruchePetitEnnemiJoueur', true);
+                this.physics.moveToObject(this.baudrucheJoueur, this.cible, 400);
             }
 
+            if(this.baudrucheJoueur.target==true){
+                if (Phaser.Math.Distance.BetweenPoints(this.baudrucheJoueur, this.cible)<=75){
+                    this.baudrucheJoueur.anims.play('attackBaudrucheExploJoueur', true);
+                    this.baudrucheJoueur.attack=true;
+                    this.baudrucheJoueur.setVelocity(0,0);
+                    this.baudrucheJoueur.setScale(3);
+                }
+            }
+
+            if (this.baudrucheJoueur.anims.currentFrame.index>=8 && this.baudrucheJoueur.attack==true){
+                this.physics.add.overlap(this.baudrucheJoueur, this.cible, degatMonstre, null, this);
+            }
+
+            if (this.baudrucheJoueur.anims.currentFrame.index==15 && this.baudrucheJoueur.attack==true){
+                    this.baudrucheJoueur.destroy();
+                    this.baudrucheJoueurEnVie=false;
+            }     
+        }
 
 
 
@@ -1101,75 +1438,65 @@
 
 
             //Ia des monstres aus mains géantes
-            this.monstres1.children.iterate(function (child) {
+        this.monstres1.children.iterate(function (child) {
 
 
-                if (child.attack==true){
-                    child.setVelocityX(0);
+            if (child.attack==true){
+                child.setVelocityX(0);
+            }
+            if (child.direction=="left" && child.attack==false){
+                child.setVelocityX(-300);
+                child.anims.play('mouvLeftMain', true);
+            }
+
+            if (child.direction=="right" && child.attack==false){
+                child.setVelocityX(300);
+                child.anims.play('mouvRightMain', true);
+            }
+
+            if(child.immo!=0){
+                child.setVelocity(0,0);
+            }
+            if (child.attack==true && this.premiereHitBoxMonstreMain==false){
+                this.attackMonstreMain = this.physics.add.group();
+                this.attackMonstreMain = this.physics.add.sprite(child.x,child.y, 'hitBoxPersoAttack');
+                this.physics.add.overlap(this.attackMonstreMain, this.player, degatPlayer, null, this);
+                this.attackMonstreMain.setGravity(0,-500);
+                this.premiereHitBoxMonstreMain=true;
+                if (child.direction=="right"){
+                    this.attackMonstreMain.setSize(100,50,50,50);
+                    this.attackMonstreMain.setOffset(50,50);
                 }
-                if (child.direction=="left" && child.attack==false){
-                    child.setVelocityX(-300);
-                //    child.direction='left';
-                    child.anims.play('mouvLeftMain', true);
+                if (child.direction=="left"){
+                    this.attackMonstreMain.setSize(100,50,50,50);
+                    this.attackMonstreMain.setOffset(-30,50);    
                 }
+            }
 
-                if (child.direction=="right" && child.attack==false){
-                    child.setVelocityX(300);
-                //    child.direction='right';
-                    child.anims.play('mouvRightMain', true);
+            if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=100 && child.attack==false){
+                child.attack=true;
+                if(child.direction=="left"){
+                    child.anims.play('attackLeftMain', true);
                 }
-
-                /*if(child.coordXOrigine-child.x>=300 && child.attack==false){
-                    child.setVelocityX(300);
-                    child.direction='right';
-                    child.anims.play('mouvRightMain', true);
+                if(child.direction=="right"){
+                    child.anims.play('attackRightMain', true);
                 }
-                if(child.x-child.coordXOrigine>=300 && child.attack==false){
-                    child.setVelocityX(-300);
-                    child.direction='left';
-                    child.anims.play('mouvLeftMain', true);
-                }*/
+                this.sleep(1000).then(() => {
+                    child.attack=false;
+                    this.premiereHitBoxMonstreMain=false;
+                    this.attackMonstreMain.destroy();
+                })
+            }
 
-                if(child.immo!=0){
-                            child.setVelocity(0,0);
-                        }
-                //child.anims.currentFrame.index>2 && child.anims.currentFrame.index<=3 &&
-                if (child.attack==true && this.premiereHitBoxMonstreMain==false){
-                    this.attackMonstreMain = this.physics.add.group();
-                    this.attackMonstreMain = this.physics.add.sprite(child.x,child.y, 'hitBoxPersoAttack');
-                    this.physics.add.overlap(this.attackMonstreMain, this.player, degatPlayer, null, this);
-                    this.attackMonstreMain.setGravity(0,-500);
-                    this.premiereHitBoxMonstreMain=true;
-                    if (child.direction=="right"){
-                        this.attackMonstreMain.setSize(100,50,50,50);
-                        this.attackMonstreMain.setOffset(50,50);
-                    }
-                    if (child.direction=="left"){
-                        this.attackMonstreMain.setSize(100,50,50,50);
-                        this.attackMonstreMain.setOffset(-30,50);    
-                    }
-                }
-
-                if (Phaser.Math.Distance.BetweenPoints(this.player, child)<=100 && child.attack==false){
-                    child.attack=true;
-                    if(child.direction=="left"){
-                        child.anims.play('attackLeftMain', true);
-                    }
-                    if(child.direction=="right"){
-                        child.anims.play('attackRightMain', true);
-                    }
-                    this.sleep(1000).then(() => {
-                        child.attack=false;
-                        this.premiereHitBoxMonstreMain=false;
-                        this.attackMonstreMain.destroy();
-                    })
-                }
-
-            },this);
+            if (child.x<800){
+                child.destroy();
+            }
+        },this);
   
 
 
-            //frame invul
+
+            //frame invulnerabilite et d'immobilisation
             if (this.player.immo!=0){
                 this.player.setVelocityX(0);
                 this.player.immo=this.player.immo-1;
@@ -1179,7 +1506,6 @@
             if(this.player.immo==0 && this.compteurInva == 60){
                 this.player.setTint(0xffffff);
             }
-
             if(this.invincible == true){
                 this.compteurInva-- ;
                 this.player.setTint(0xff0000);
@@ -1191,6 +1517,10 @@
             }
 
 
+
+
+
+            //detection des touches
             if (this.cursors.left.isDown){
                 this.moveLeft=true;
             }else{
@@ -1217,6 +1547,7 @@
 
 
 
+            //consequence de la mort
             if (this.gameOver==true){ 
                 this.gameOver=false;
                 this.player.vie=5;
@@ -1224,10 +1555,11 @@
                 this.player.x=3000;
                 this.player.y=600;
             }
-            //console.log(this.input.keyboard.checkDown(this.keys.d,9000));
-            //console.log(this.dash);
 
-            if (this.input.keyboard.checkDown(this.keys.z,9000)==true && this.dash==false && this.mort!=true && this.player.immo==0){
+
+
+            //dash
+            if (this.input.keyboard.checkDown(this.keys.z,9000)==true && this.dash==false && this.mort!=true && this.player.immo==0 && this.animation!=true){
                 this.dash=true;
                 this.timedEvent = this.time.delayedCall(300, this.stopDash, [], this);//je ne sais pas pourquoi mais les fonction delayedCall et TimeOut s'execute plusieur fois d'affilés
             };
@@ -1245,62 +1577,75 @@
 
             };
 
-            /*
-            if ((this.input.keyboard.checkDown(this.keys.d,9000)==true)&&(this.dashVal==0)&& this.dash==true){this.dashVal=9000};
-                if (this.dashVal>0){
-                    this.dashVal = this.dashVal -600
-                    this.player.setVelocity(0,0);
-
-                    if (this.player.direction == "left"){
-                        this.player.setVelocityX(-600);
-                        this.player.anims.play('dashLeft', true)
-                    }
-                    else if (this.player.direction == "right"){
-                        this.player.setVelocityX(600);
-                        this.player.anims.play('dashRight', true)
-                    }
-
-                };
-            if (this.dashVal<0){this.dashVal = 0};*/
 
 
-            if (this.dash==false && this.mort!=true && this.cris!=true && this.player.immo==0 && this.degatSubis!=true){
+
+            //mouvement
+            if (this.dash==false && this.mort!=true && this.cris!=true && this.player.immo==0 && this.animation!=true){
                 if (this.moveLeft){
                     this.player.setVelocityX(-350); //alors vitesse négative en X
                     if (this.jump==false && this.attack==false && this.mort==false){
-                        this.player.anims.play('left', true); //et animation => gauche
+                        if (this.vol==true){
+                            this.player.anims.play('persoVolLeft', true); //et animation => gauche
+                        }else{
+                            this.player.anims.play('left', true); //et animation => gauche
+                        }
                     }
                     this.player.direction = 'left';
+        
                 }else if (this.moveRight){
                     this.player.setVelocityX(350); //alors vitesse positive en X
                     if (this.jump==false && this.attack==false && this.mort==false){
-                        this.player.anims.play('right', true); //et animation => gauche
+                        if (this.vol==true){
+                            this.player.anims.play('persoVolRight', true); //et animation => gauche
+                        }else{
+                            this.player.anims.play('right', true); //et animation => gauche
+                        }
                     }
-                    this.player.direction = 'right';
+                    this.player.direction="right";
+
+                }else if (this.moveUp && this.vol==true){
+                    this.player.setVelocityY(-350); //alors vitesse positive en X
+                    this.player.anims.play('persoVolUp', true); //et animation => gauche
+
+                }else if (this.moveDown && this.vol==true){
+                    this.player.setVelocityY(350); //alors vitesse positive en X
+                    this.player.anims.play('persoVolDown', true); //et animation => gauche
+
                 }else{ // sinon
                     this.player.setVelocityX(0);
-                    if (this.jump==false && this.attack==false && this.mort==false){
-                        this.player.anims.play('turn', true); //et animation => gauche
+                    if (this.vol!=true){
+                        if (this.jump==false && this.attack==false && this.mort==false){
+                            this.player.anims.play('turn', true); //et animation => gauche
+                        }
+                    }else{
+                        this.player.anims.play('persoVolUp', true); //et animation => gauche
+                        this.player.setVelocityY(0);
                     }
                 }
 
             }
 
+
+
+            //saut
                 if (this.player.body.onFloor() && this.jump==true){
                     this.nbSaut=2;
                     this.jump=false;
                     this.attack=false;
                 }
 
-                if (Phaser.Input.Keyboard.JustDown(this.cursors.space) && this.nbSaut>0 && this.cris!=true && this.player.immo==0 && this.mort!=true && this.degatSubis!=true){
-                //si touche haut appuyée ET que le perso touche le sol
+                if (Phaser.Input.Keyboard.JustDown(this.cursors.space) && this.nbSaut>0 && this.cris!=true && this.player.immo==0 && this.mort!=true && this.animation!=true && this.vol!=true){
                 this.player.anims.play('jump', true);
                 this.player.setVelocityY(-400);
                 this.nbSaut=this.nbSaut-1;
                 this.jump=true;
                 }
 
-                if (Phaser.Input.Keyboard.JustDown(this.keys.e) && this.attack!=true && this.player.immo==0 && this.mort!=true && this.degatSubis!=true){
+
+
+            //attaque
+                if (Phaser.Input.Keyboard.JustDown(this.keys.e) && this.attack!=true && this.player.immo==0 && this.mort!=true && this.animation!=true && this.vol!=true){
                     if (this.player.direction=="right"){
                         this.player.anims.play('rightAttack', true);
                         this.attackFauxPerso.play();
@@ -1339,13 +1684,17 @@
                 }
 
 
-                if (Phaser.Input.Keyboard.JustDown(this.keys.a) && this.player.immo==0 && this.mort!=true && this.degatSubis!=true){
+
+
+
+
+                //attaque speciale
+                if (Phaser.Input.Keyboard.JustDown(this.keys.a) && this.player.immo==0 && this.mort!=true){
                     if(this.ameMonstre=="banshee" && this.afficheScore>=20){
                         this.afficheScore=this.afficheScore-20;
                         this.scoreArgent.setText(': ' + this.afficheScore);
                         this.scoreArgent.updateText();
 
-                        console.log(this.cris);
                         this.criBansheePerso = this.physics.add.sprite(this.player.x,this.player.y-40, 'compAmeBanshee').setScale(2);
                         this.criBansheePerso.anims.play('crisAmeBanshee', true);
                         this.criBansheePerso.setGravityY(-500);
@@ -1356,8 +1705,8 @@
                     }
 
 
-                    if (this.ameMonstre=="baudruche" && this.afficheScore>=40){
-                        this.afficheScore=this.afficheScore-40;
+                    if (this.ameMonstre=="baudruche" && this.afficheScore>=20){
+                        this.afficheScore=this.afficheScore-20;
                         this.scoreArgent.setText(': ' + this.afficheScore);
                         this.scoreArgent.updateText();
 
@@ -1384,8 +1733,9 @@
                         this.scoreArgent.setText(': ' + this.afficheScore);
                         this.scoreArgent.updateText();
                         
-                        this.attackPersoFaux = this.physics.add.sprite(this.player.x,this.player.y, 'attackFaux').setScale(2);
+                        this.attackPersoFaux = this.physics.add.sprite(this.player.x,this.player.y, 'attackFaux').setScale(1.5);
                         this.physics.add.overlap(this.attackPersoFaux, this.monstreGlobal, degatMonstre, null, this);
+                        this.physics.add.collider(this.attackPersoFaux, this.obstacles, cleanProj, null, this);
                         this.attackPersoFaux.setGravity(0,-500);
                         this.ameMain.play();
                         if (this.player.direction=="right"){
@@ -1395,16 +1745,24 @@
                         }
                         this.attackPersoFaux.anims.play('fauxMouv', true);
                     }
+
+
+
+                    if (this.ameMonstre=="cupidon"){
+                        if (this.vol==true){
+                            this.vol=false;
+                            this.player.setGravityY(0);
+                        }else{
+                            this.vol=true;
+                            this.player.setGravityY(-500);
+                            this.cupidonCoeur.play();
+                        }
+                    }
                 }
 
 
-               /* if (this.player.anims.currentFrame.index==18 &&  this.mort==true){
-                        //this.gameOver=true;
-                        this.faux = this.physics.add.sprite(this.player.x, this.player.y, 'faux').setScale(2);
-                        this.faux.body.setGravity(0,500);
-                        this.player.disableBody(true,true);
-                        this.gameOver=true;
-                }*/
+
+                //mort du joueur
                 if(this.player.vie<=0 && this.mort!=true){
                     this.player.anims.play('death', true);
                     this.mort=true;
@@ -1418,33 +1776,45 @@
                 }
 
             }
+
+
             stopDash(){
                 this.dash=false;
             }
 
 
             verifierHauteur(baudrucheFond1){
+                //verifie la hauteur pour reinitialiser le fond anime
                 if (baudrucheFond1.y<=0){
                     baudrucheFond1.destroy();
                     this.invoqueBaudrucheBackground();
                 }
             }
-            invoqueBaudrucheBackground(){
 
-                this.coordX=Math.floor(Math.random() * 1900);
-                this.coordY=Math.floor(Math.random() * 2100);
+
+
+            invoqueBaudrucheBackground(){
+            //creer entite pour fond anime
+                this.coordX=Math.floor(Math.random() * 9600);
+                this.coordY=6600;
                 this.taille=Math.floor(Math.random() * 5);
                 this.vitesse=Math.floor(Math.random() * 400);
                 this.baudrucheFond1 = this.baudrucheFont.create(this.coordX,this.coordY, 'baudrucheBackground').setScale(this.taille).setDepth(-1).setGravity(0,-500);
                 //this.baudrucheFond1 = this.physics.add.sprite(100,450, 'baudrucheBackground').setScale(this.taille).setDepth(1).setGravity(0,-500);
                 //this.baudrucheFond1.body.setGravity(0,-2000);
                 this.baudrucheFond1.setVelocityY(-(this.vitesse));
+                this.transparance=this.taille/10;
+                this.baudrucheFond1.setAlpha(0.3+this.transparance);
                 this.baudrucheFond1.anims.play('battementBaudruche', true);
                 //this.baudrucheFont.add(this.baudrucheFond1);
                 //this.physics.add.collider(this.baudrucheFont, this.obstacles);
                 }
 
+
+
+
             creerDrops(monstre){
+                //creer le drop de l'ame du monstre
                 if (monstre.type=="main"){
                     this.dropSoul = this.dropsSouls.create(monstre.x,monstre.y, 'portraitMain').setScale(1).setDepth(2);
                 }
@@ -1454,20 +1824,14 @@
                 if (monstre.type=="banshee"){
                     this.dropSoul = this.dropsSouls.create(monstre.x,monstre.y, 'portraitBanshee').setScale(1.5).setDepth(2);
                 }
-                //this.dropSoul = this.dropsSouls.create(monstre.x,monstre.y, 'lenterne').setScale(0.5).setDepth(2);
-                //this.dropSoul = this.physics.add.sprite(monstre.x,monstre.y, 'fantome').setScale(1).setDepth(2);
+                if (monstre.type=="cupidon"){
+                    this.dropSoul = this.dropsSouls.create(monstre.x,monstre.y, 'portraitCupidon').setScale(1.5).setDepth(2);
+                }
                 this.dropsSouls.add(this.dropSoul);
                 this.dropSoul.setTint(0xfff0f0);
                 this.dropSoul.type=monstre.type;
             }
         };
-            
-            function hitBomb(player, bomb){
-                this.physics.pause();
-                player.setTint(0xff0000);
-                player.anims.play('turn');
-                gameOver = true;
-            }
 
             function shine(lenterne,fantome){
                 this.argent.setTint(0xf0f0f0);
@@ -1475,17 +1839,21 @@
             }
 
             function immoPlayer(player,monstre){
-                //this.attackPersoFaux.destroy();
+            //immobilise le joueur quand touche par un cris de banshee
                 if (this.player.immo==0){
                     this.player.immo=100;
                 }
             }
 
             function immoMonstre(player,monstre){
-                //this.attackPersoFaux.destroy();
+            //immobilise monstre quand touche par un cris de banshe
                 if (monstre.immo==0){
                     monstre.immo=100;
                 }
+            }
+
+            function cleanProj(projectileFaux){
+                projectileFaux.destroy();
             }
 
             function degatPlayer(player){
@@ -1506,15 +1874,13 @@
                 }
             }
 
+
+            //fonction pour interaction avec objet
             function activeLevier1(player,levier){
                 if (this.keys.e.isDown){
-                    //this.murSpeciaux1.destroy();
-
-                    this.cameras.main.shake(50);
+                    this.cameras.main.shake(100);
                     levier.disableBody(true,true);
-
                     this.murSpeciaux1.children.iterate(function (child) {
-                        //child.destroy();
                         child.disableBody(true,true);
                     },this);
                     this.screen
@@ -1523,50 +1889,42 @@
 
             function activeLevier2(player,levier){
                 if (this.keys.e.isDown){
-                    this.cameras.main.shake(50);
+                    this.cameras.main.shake(100);
                     levier.disableBody(true,true);
-                    //this.murSpeciaux2.destroy();
                     this.murSpeciaux2.children.iterate(function (child) {
-                        //child.destroy();
                         child.disableBody(true,true);
                     },this);
                 }
             }
 
+
             function activeLevier3(player,levier){
                 if (this.keys.e.isDown){
-                    this.cameras.main.shake(50);
+                    this.cameras.main.shake(100);
                     levier.disableBody(true,true);
                     this.murSpeciaux3.children.iterate(function (child) {
-                        //child.destroy();
                         child.disableBody(true,true);
                     },this);
-
                     this.murSpeciaux4 = this.physics.add.staticGroup();
                     this.physics.add.collider(this.murSpeciaux4, this.player);
-
                     this.mapTest.getObjectLayer('murSpeciaux4').objects.forEach((murSpeciaux4)=>{
                         this.murSpecial = this.murSpeciaux4.create( (murSpeciaux4.x)*2+32, (murSpeciaux4.y)*2-32, 'murSpecial').setScale(2);
-                        //this.murSpecial.setPushable(false);
                     })                    
                 }
             }
             
             function changeDirection(monstre){
+                //change direction des monstre mains quand ils touche un obstacles
                 if (monstre.direction=="right"){
                     monstre.direction="left";
-                //    monstre.setVelocityX(-300);
-                //    monstre.anims.play('mouvLeftMain', true);
                 }
                 else{
                     monstre.direction="right";
-                //    monstre.setVelocityX(300);
-                //    monstre.anims.play('mouvRightMain', true);
                 }
             }
 
             function degatMonstre(player,monstre){
-                //this.attackPersoFaux.destroy();
+                //gere les degats et la mort des monstres
                 if (monstre.invulnerabilite==0){
                     monstre.vie=monstre.vie-10;
                     monstre.invulnerabilite=40;
@@ -1575,9 +1933,7 @@
                     if (this.player.vie<5){
                         this.player.vie=this.player.vie+1;
                     }
-                    //monstre.disableBody(true,true);
                     this.creerDrops(monstre);
-                    //this.ameMonstre=monstre.type;
                     monstre.destroy();
                     this.afficheScore=this.afficheScore+monstre.valeur+Math.floor(Math.random() * 15);
                     this.scoreArgent.setText(': ' + this.afficheScore);
@@ -1587,20 +1943,36 @@
                     this.fantome.anims.play('fantomeApp', true);
                     this.fantome.time=0;
                     this.fantome.joueur=false;
-                }
+
+                    if(monstre.type="banshee" && monstre.cris==true)
+                        this.attackCrisBanshee.destroy();
+                    }
             }
 
             function affichePouvoirActuel(ame){
-                console.log("fait");
                 ame.x=500;
                 ame.y=200;
             }
 
             function recupDrops(player,drop){
-                if (this.ameMonstre!=drop.type){
+                if (this.ameMonstre!=drop.type && this.ameMonstre!="cupidon"){
                     this.ameMonstre=drop.type;
                     drop.disableBody(true,true);
                     this.change=true;
+
+                    if(drop.type=="cupidon"){
+                        this.cameras.main.shake(50);
+                        this.murSpeciaux5.children.iterate(function (child) {
+                                child.disableBody(true,true);
+                        },this);
+
+
+
+                        this.texteFins = this.physics.add.group({allowGravity:false});
+                        this.texteFin = this.texteFins.create(500, 250, 'texteFin').setScale(2);
+                        this.texteFin.setScrollFactor(0);
+                        this.texteFinEnCours=true;
+                    }
                 }
 
             }
@@ -1615,10 +1987,10 @@
                 default: 'arcade',
                 arcade: {
                 gravity: { y: 500},
-                debug: false
+                debug: true
             }},
 
-            scene: [EcranAccueil,Tuto]
+            scene: [EcranAccueil,Jeu, EcranFin]
             };
             new Phaser.Game(config);
 
